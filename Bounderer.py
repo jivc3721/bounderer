@@ -18,6 +18,8 @@ from docx import Document
 #import win32api
 #import win32print
 
+#prueba
+
 # colors of the interface
 REC_WRITING = "#0B0"  # a light green
 REC_CODING = "#BBD"  # lither green "#ADA"
