@@ -12,6 +12,7 @@ from tkinter import messagebox
 import os
 
 from docx import Document
+import xlsxwriter
 
 #for printing
 # import tempfile
@@ -1597,6 +1598,37 @@ def bring_graph_view():
     tc.paint()
     graph_view.lift()
 
+def export_excel():
+    filename = filedialog.asksaveasfilename(title="Export Coding to Excel", defaultextension=".xlsx",
+                                            filetypes=(("Excel files", "*.xlsx"), ("all files", "*.*")))
+    # if filename:
+    #     book = xlsxwriter.Workbook(filename)
+    #     sheet = book.add_worksheet()
+    #     pass
+
+
+def export_graph():
+    filename = filedialog.asksaveasfilename(title="Export Structure Tree to GraphML", defaultextension=".GRAPHML",
+                                            filetypes=(("GraphML type", "*.GRAPHML"), ("all files", "*.*")))
+    if filename:
+        f = open(filename, mode="w")
+        f.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+        f.write("<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\"\n")
+        f.write("    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n")
+        f.write("    xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns\n")
+        f.write("     http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">\n")
+        f.write("  <graph id=\"StructureTree\" edgedefault=\"undirected\">\n")
+        n_nodes = len(tc.t_matrix[0])
+        for i in range(n_nodes):
+            f.write("    <node id=\"" + str(i)+ "\"/>\n")
+            for j in range(n_nodes):
+                if tc.t_matrix[i][j] != 0:
+                    f.write("    <edge source=\"" + str(j) + "\" target=\"" + str(i) + "\"/>\n")
+        f.write("  </graph>\n")
+        f.write("</graphml>\n")
+
+        f.close()
+
 
 ###################################################################
 ###################################################################
@@ -1649,8 +1681,8 @@ menuFile.add_command(label="Open", command=open_file)
 menuFile.add_command(label="Save", command=save_file)
 menuFile.add_command(label="Import", command=import_file)
 menuFile.add_command(label="Export Postscript", command=print_coding)
-menuFile.add_command(label="Export Excel", command=nothing_to_do)
-menuFile.add_command(label="Export Network", command=nothing_to_do)
+menuFile.add_command(label="Export Excel", command=export_excel)
+menuFile.add_command(label="Export Network", command=export_graph)
 menuFile.add_command(label="Exit", command=nothing_to_do)
 
 menuView = tk.Menu(menubar, tearoff=0)
