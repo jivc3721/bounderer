@@ -1601,11 +1601,16 @@ def bring_graph_view():
 def export_excel():
     filename = filedialog.asksaveasfilename(title="Export Coding to Excel", defaultextension=".xlsx",
                                             filetypes=(("Excel files", "*.xlsx"), ("all files", "*.*")))
-    # if filename:
-    #     book = xlsxwriter.Workbook(filename)
-    #     sheet = book.add_worksheet()
-    #     pass
-
+    if filename:
+        book = xlsxwriter.Workbook(filename)
+        sheet = book.add_worksheet()
+        excelrow = 1
+        for row in coding_sheet :
+            for i in range(number_of_columns):
+                if i != ACTIONS_COLUMN:
+                    sheet.write(excelrow, i, c.itemcget(row[i], 'text'))
+            excelrow += 1
+        book.close()
 
 def export_graph():
     filename = filedialog.asksaveasfilename(title="Export Structure Tree to GraphML", defaultextension=".GRAPHML",
@@ -1617,7 +1622,7 @@ def export_graph():
         f.write("    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n")
         f.write("    xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns\n")
         f.write("     http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">\n")
-        f.write("  <graph id=\"StructureTree\" edgedefault=\"undirected\">\n")
+        f.write("  <graph id=\"StructureTree\" edgedefault=\"directed\">\n")
         n_nodes = len(tc.t_matrix[0])
         for i in range(n_nodes):
             f.write("    <node id=\"" + str(i)+ "\"/>\n")
