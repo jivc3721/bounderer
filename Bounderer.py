@@ -1622,10 +1622,13 @@ def export_graph():
         f.write("    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n")
         f.write("    xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns\n")
         f.write("     http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">\n")
+        f.write("    <key id =\"label\" for=\"node\" attr.name=\"label\" attr.type=\"string\" />")
         f.write("  <graph id=\"StructureTree\" edgedefault=\"directed\">\n")
         n_nodes = len(tc.t_matrix[0])
         for i in range(n_nodes):
-            f.write("    <node id=\"" + str(i)+ "\"/>\n")
+            f.write("    <node id=\"" + str(i)+ "\">\n")
+            f.write("      <data key=\"label\"" + ">Setting" + str(i) + "</data>\n")
+            f.write("    </node>\n")
             for j in range(n_nodes):
                 if tc.t_matrix[i][j] != 0:
                     f.write("    <edge source=\"" + str(j) + "\" target=\"" + str(i) + "\"/>\n")
