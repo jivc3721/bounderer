@@ -18,6 +18,8 @@ PROBING     = 3
 CHALLENGING = 4
 ENHANCING   = 5
 
+NO_ICON     = -1
+
 UNCONNECTED      = -1
 UNCONNECTED_DASH = (1,1)
 CONNECTED_DASH   = ()
@@ -64,6 +66,17 @@ link = {}
 ## The tuple will have len =2.
 ## The number at [0] will be the number of the first icon, the one in a previous row
 ## The number at [1] will be the number of the second icon to be connected
+
+class excel_field :
+    def __init__(self, k_row=0, k_icon=0, k_delta_x=0, flow=0, time="", actor="", transcription="", comment=""):
+        self.k_row = k_row
+        self.k_icon = k_icon
+        self.k_delta_x = k_delta_x
+        self.flow = flow
+        self.time = time
+        self.actor = actor
+        self.transcription = transcription
+        self.comment = comment
 
 
 class action :

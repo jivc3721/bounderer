@@ -1612,6 +1612,37 @@ def export_excel():
             excelrow += 1
         book.close()
 
+# excel_indx=0
+# old_excel = excel_field(with row 0)
+# for row in coding_sheet:
+#     new_excel = get the info from row
+#     compare old_excel with new_excel (specially time, actor, are they empty?)
+#     adjust new_excel
+#     get_the_icons(row)
+#     for icon in icons:
+#         put info from row (icon, delta_x) in new_excel
+#         get_links(icon)
+#         for link in links:
+# 	        from info link/flow in new_excel
+# 	        put new_excel in excel(excel_indx)
+# 	        excel_indx+=1
+#         else:
+# 	        no links in the icon
+	        # put link=-flow in new_excel
+	        # put new_excel in excel(excel_indx)
+	        # excel_indx+=1
+    # else:
+	#     no icons
+	    # put info icon (NO_ICON) flow-1 delta_x-1 in new_excel
+	    # put new_excel in excel(excel_indx)
+	    # excel_indx+=1
+	# old_excel = new_excel
+# else:
+#     pass # there is nothing to save
+
+
+
+
 def export_graph():
     filename = filedialog.asksaveasfilename(title="Export Structure Tree to GraphML", defaultextension=".GRAPHML",
                                             filetypes=(("GraphML type", "*.GRAPHML"), ("all files", "*.*")))
