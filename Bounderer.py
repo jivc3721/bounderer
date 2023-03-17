@@ -1612,36 +1612,60 @@ def export_excel():
             excelrow += 1
         book.close()
 
-# excel_indx=0
-# old_excel = excel_field(with row 0)
-# for row in coding_sheet:
-#     new_excel = get the info from row
-#     compare old_excel with new_excel (specially time, actor, are they empty?)
-#     adjust new_excel
-#     get_the_icons(row)
-#     for icon in icons:
-#         put info from row (icon, delta_x) in new_excel
-#         get_links(icon)
-#         for link in links:
-# 	        from info link/flow in new_excel
-# 	        put new_excel in excel(excel_indx)
-# 	        excel_indx+=1
-#         else:
-# 	        no links in the icon
-	        # put link=-flow in new_excel
-	        # put new_excel in excel(excel_indx)
-	        # excel_indx+=1
-    # else:
-	#     no icons
-	    # put info icon (NO_ICON) flow-1 delta_x-1 in new_excel
-	    # put new_excel in excel(excel_indx)
-	    # excel_indx+=1
-	# old_excel = new_excel
-# else:
-#     pass # there is nothing to save
+def field_value(field):
+    return c.itemcget(field, "text")
+
+def row_to_excel(sheet, excelrow, excel_field):
+    sheet.write(excelrow, 1, excel_field.k_row)
+    sheet.write(excelrow, 2, excel_field.k_icon)
+    sheet.write(excelrow, 3, excel_field.k_delta_x)
+    sheet.write(excelrow, 4, excel_field.flow)
+    sheet.write(excelrow, 5, excel_field.icon_note)
+    sheet.write(excelrow, 6, excel_field.time)
+    sheet.write(excelrow, 7, excel_field.actor)
+    sheet.write(excelrow, 8, excel_field.transcription)
+    sheet.write(excelrow, 9, excel_field.comment)
+
+def export_excelVrNew():
+    filename = filedialog.asksaveasfilename(title="Export Coding to Excel", defaultextension=".xlsx",
+                                            filetypes=(("Excel files", "*.xlsx"), ("all files", "*.*")))
+    if filename:
+        book = xlsxwriter.Workbook(filename)
+        sheet = book.add_worksheet()
+        excelrow = 1
 
 
-
+        old_excel = excel_field(0)
+        for row in coding_sheet:
+            new_excel = excel_field(int(field_value(row[MOVE_COLUMN])))
+            new_excel.time = old_excel.time if new_excel.time == "" else new_excel.time
+            new_excel.actor = old_excel.actor if new_excel.actor == "" else new_excel.actor
+            icons = c.icons_in_row(row[MOVE_COLUMN])
+            for icon in icons:
+                new_excel.k_icon = action_icon[icon].action
+                new_excel.k_delta_x = action_icon[icon].delta_x
+                new_excel.flow = action_icon[icon].flow
+                new_excel.icon_note = action_icon[icon].note
+                flows = action_icon[icon].flow_parents()
+                for link in flows:
+                    new_excel.flow = link
+                    row_to_excel(sheet, excelrow, new_excel)
+                    excelrow+=1
+                else:
+                    # no links in the icon # extract the flow from the flow in which the icon is
+                    row_to_excel(sheet, excelrow, new_excel)
+                    excelrow += 1
+            else:
+                # no icons
+                new_excel.k_icon = NO_ICON
+                new_excel.flow = UNCONNECTED
+                new_excel.k_delta_x = NO_ICON
+                row_to_excel(sheet, excelrow, new_excel)
+                excelrow+=1
+            old_excel = new_excel
+        else:
+            pass # there is nothing to save
+        book.close()
 
 def export_graph():
     filename = filedialog.asksaveasfilename(title="Export Structure Tree to GraphML", defaultextension=".GRAPHML",

@@ -68,15 +68,29 @@ link = {}
 ## The number at [1] will be the number of the second icon to be connected
 
 class excel_field :
-    def __init__(self, k_row=0, k_icon=0, k_delta_x=0, flow=0, time="", actor="", transcription="", comment=""):
-        self.k_row = k_row
-        self.k_icon = k_icon
-        self.k_delta_x = k_delta_x
-        self.flow = flow
-        self.time = time
-        self.actor = actor
-        self.transcription = transcription
-        self.comment = comment
+ # This initialization takes the values referenced by coding_sheet but some values in relation to icons are left empty
+    def __init__(self, row):
+        # def __init__(self, k_row=0, k_icon=0, k_delta_x=0, flow=0, time="", actor="", transcription="", comment=""):
+
+        # self.k_row = k_row
+        # self.k_icon = k_icon
+        # self.k_delta_x = k_delta_x
+        # self.flow = flow
+        # self.time = time
+        # self.actor = actor
+        # self.transcription = transcription
+        # self.comment = comment
+        # self.icon_note = ""
+
+        self.k_row = int(c.itemcget(coding_sheet[row][MOVE_COLUMN], 'text'))
+        self.time = c.itemcget(coding_sheet[row][TIME_COLUMN], 'text')
+        self.actor = c.itemcget(coding_sheet[row][ACTOR_COLUMN], 'text')
+        self.transcription = c.itemcget(coding_sheet[row][COMMUNICATION_COLUMN], 'text')
+        self.comment = c.itemcget(coding_sheet[row][NOTES_COLUMN], 'text')
+        self.k_icon = NO_ICON
+        self.k_delta_x = NO_ICOM
+        self.flow = UNCONNECTED
+        self.icon_note = ""
 
 
 class action :
