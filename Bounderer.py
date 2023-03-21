@@ -1598,7 +1598,7 @@ def bring_graph_view():
     tc.paint()
     graph_view.lift()
 
-def export_excel():
+def export_excelOld():
     filename = filedialog.asksaveasfilename(title="Export Coding to Excel", defaultextension=".xlsx",
                                             filetypes=(("Excel files", "*.xlsx"), ("all files", "*.*")))
     if filename:
@@ -1615,6 +1615,30 @@ def export_excel():
 def field_value(field):
     return c.itemcget(field, "text")
 
+def write_excel_header(sheet):
+    sheet.write(0, 1, "k_row")
+    sheet.write(0, 2, "k_icon")
+    sheet.write(0, 3, "k_delta_x")
+    sheet.write(0, 4, "flow")
+    sheet.write(0, 5, "icon_note")
+    sheet.write(0, 6, "time")
+    sheet.write(0, 7, "actor")
+    sheet.write(0, 8, "transcription")
+    sheet.write(0, 9, "comment")
+
+
+def load_row_on_field(row, excelfield):
+    excelfield.k_row = int(c.itemcget(coding_sheet[row][MOVE_COLUMN], 'text'))
+    excelfield.time = c.itemcget(coding_sheet[row][TIME_COLUMN], 'text')
+    excelfield.actor = c.itemcget(coding_sheet[row][ACTOR_COLUMN], 'text')
+    excelfield.transcription = c.itemcget(coding_sheet[row][COMMUNICATION_COLUMN], 'text')
+    excelfield.comment = c.itemcget(coding_sheet[row][NOTES_COLUMN], 'text')
+    excelfield.k_icon = NO_ICON
+    excelfield.k_delta_x = NO_ICON
+    excelfield.k_flow = UNCONNECTED
+    excelfield.icon_note = ""
+
+
 def row_to_excel(sheet, excelrow, excel_field):
     sheet.write(excelrow, 1, excel_field.k_row)
     sheet.write(excelrow, 2, excel_field.k_icon)
@@ -1626,21 +1650,22 @@ def row_to_excel(sheet, excelrow, excel_field):
     sheet.write(excelrow, 8, excel_field.transcription)
     sheet.write(excelrow, 9, excel_field.comment)
 
-def export_excelVrNew():
+def export_excel():
     filename = filedialog.asksaveasfilename(title="Export Coding to Excel", defaultextension=".xlsx",
                                             filetypes=(("Excel files", "*.xlsx"), ("all files", "*.*")))
     if filename:
         book = xlsxwriter.Workbook(filename)
         sheet = book.add_worksheet()
+        write_excel_header(sheet)
+
         excelrow = 1
-
-
-        old_excel = excel_field(0)
+        old_excel = excel_field()
+        new_excel = excel_field()
         for row in coding_sheet:
-            new_excel = excel_field(int(field_value(row[MOVE_COLUMN])))
+            load_row_on_field(int(field_value(row[MOVE_COLUMN])), new_excel)
             new_excel.time = old_excel.time if new_excel.time == "" else new_excel.time
             new_excel.actor = old_excel.actor if new_excel.actor == "" else new_excel.actor
-            icons = c.icons_in_row(row[MOVE_COLUMN])
+            icons = c.icons_in_row(int(field_value(row[MOVE_COLUMN])))
             for icon in icons:
                 new_excel.k_icon = action_icon[icon].action
                 new_excel.k_delta_x = action_icon[icon].delta_x
@@ -1650,7 +1675,7 @@ def export_excelVrNew():
                 for link in flows:
                     new_excel.flow = link
                     row_to_excel(sheet, excelrow, new_excel)
-                    excelrow+=1
+                    excelrow += 1
                 else:
                     # no links in the icon # extract the flow from the flow in which the icon is
                     row_to_excel(sheet, excelrow, new_excel)
