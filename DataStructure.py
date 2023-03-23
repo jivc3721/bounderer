@@ -82,7 +82,7 @@ class excel_field :
         self.comment = ""
         self.icon_note = ""
 
-
+#    Icon comment????????
 
 class action :
     def __init__(self, row=0, flow=UNCONNECTED, action=0, delta_x=0, links=(),

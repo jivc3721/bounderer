@@ -1676,20 +1676,17 @@ def export_excel():
                     new_excel.flow = link
                     row_to_excel(sheet, excelrow, new_excel)
                     excelrow += 1
-                else:
+                if not flows:
                     # no links in the icon # extract the flow from the flow in which the icon is
                     row_to_excel(sheet, excelrow, new_excel)
                     excelrow += 1
-            else:
-                # no icons
+            if not icons:
                 new_excel.k_icon = NO_ICON
                 new_excel.flow = UNCONNECTED
                 new_excel.k_delta_x = NO_ICON
                 row_to_excel(sheet, excelrow, new_excel)
                 excelrow+=1
             old_excel = new_excel
-        else:
-            pass # there is nothing to save
         book.close()
 
 def export_graph():
