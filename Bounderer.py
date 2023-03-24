@@ -385,14 +385,15 @@ class CodingCanvas(tk.Canvas):
             self.move("move", 0, diff)
             self.dtag("move", "move")
             self.dtag("exclude", "exclude")
-        self.fit_box_text(current_row)
-        self.fix_graph(current_row)
-        self.update_idletasks()
-        box_all = self.bbox('all')
-        self.print_state(item)
-        self.configure(scrollregion=(0, 0, 1366, box_all[3]))
-        self.print_state(item)
-        self.yview_scroll(0, tk.UNITS)
+            # Old division
+            self.fit_box_text(current_row)
+            self.fix_graph(current_row)
+            self.update_idletasks()
+            box_all = self.bbox('all')
+            self.print_state(item)
+            self.configure(scrollregion=(0, 0, 1366, box_all[3]))
+            self.print_state(item)
+            self.yview_scroll(0, tk.UNITS)
 
 ##___________________________End Actualising Adapting Visualization
 ##_________________________________________________________________
@@ -1597,20 +1598,6 @@ def bring_graph_view():
     tc.load_data()
     tc.paint()
     graph_view.lift()
-
-def export_excelOld():
-    filename = filedialog.asksaveasfilename(title="Export Coding to Excel", defaultextension=".xlsx",
-                                            filetypes=(("Excel files", "*.xlsx"), ("all files", "*.*")))
-    if filename:
-        book = xlsxwriter.Workbook(filename)
-        sheet = book.add_worksheet()
-        excelrow = 1
-        for row in coding_sheet :
-            for i in range(number_of_columns):
-                if i != ACTIONS_COLUMN:
-                    sheet.write(excelrow, i, c.itemcget(row[i], 'text'))
-            excelrow += 1
-        book.close()
 
 def field_value(field):
     return c.itemcget(field, "text")
