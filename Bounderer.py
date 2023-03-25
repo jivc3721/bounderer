@@ -237,7 +237,6 @@ class CodingCanvas(tk.Canvas):
         self.tag_bind("icon", "<Shift-B1-Motion>", self.move_icon)
         self.tag_bind("icon", "<Shift-B1-ButtonRelease>", self.icon_restplace)
 
-
     def has_focus(self):
         return self.focus()
 
@@ -1469,7 +1468,7 @@ def import_file():
 
 
 def open_file():
-    global current_row, current_column, coding_sheet
+    global current_row, current_column, coding_sheet, codingfile
     filename = filedialog.askopenfilename(title="Open Coding", defaultextension=".bg",
                                           filetypes=(("boundary games coding", "*.bg"), ("all files", "*.*")))
     if filename:
@@ -1531,6 +1530,7 @@ def open_file():
                 icon2 = c.identify_icon(data[3], data[4], data[5])
                 print("icons to link:", icon1, icon2)
                 c.create_link(icon1, icon2)
+            codingfile = filename
         f.close()
         root.title("Bounderer Vr. Alfa ::: " + filename)
         current_row = 0
@@ -1542,10 +1542,12 @@ def open_file():
         c.highlight(coding_sheet[current_row][current_column])
 
 def save_file():
-    filename = filedialog.asksaveasfilename(title="Save Coding As", defaultextension=".bg",
+    global codingfile
+    codingfile = filedialog.asksaveasfilename(title="Save Coding As", defaultextension=".bg",
+                                            initialfile=codingfile,
                                             filetypes=(("boundary games coding", "*.bg"), ("all files", "*.*")))
-    if filename:
-        f = open(filename, mode="w")
+    if codingfile:
+        f = open(codingfile, mode="w")
         for row in coding_sheet:
             for i in range(number_of_columns):
                 if i != ACTIONS_COLUMN:
@@ -1575,7 +1577,7 @@ def save_file():
                     str(action_icon[icon2].delta_x) + " " +
                     "\n")
         f.close()
-        root.title("Bounderer Vr. Alfa ::: " + filename)
+        root.title("Bounderer Vr. Alfa ::: " + codingfile)
 
 
 def mytrace():
@@ -1701,6 +1703,16 @@ def export_graph():
 
         f.close()
 
+def on_closing():
+    if tk.messagebox.askokcancel("Quit", "Do you want to save the file before quitting?"):
+        save_file()
+        root.destroy()
+    else:
+        root.destroy()
+# Perhaps improve this detecting if the file needs to be saved because there are changes. This requires
+# a boolean on all the errors messages (if no error is that there was a change) add to this the delete icon that do not
+#  have a separate function for error handling
+# the other thing is handle_key with printable keys and enter, backspace to move the boolean.
 
 ###################################################################
 ###################################################################
@@ -1777,6 +1789,11 @@ menubar.add_cascade(label="Settings", menu=menuSettings)
 menubar.add_command(label="About", command=nothing_to_do)
 menubar.add_command(label="Search", command=nothing_to_do)
 
+codingfile = ""
+
 root.configure(menu=menubar)
+
+# bit to make the program ask for saving the file when quiting
+root.protocol("WM_DELETE_WINDOW", on_closing)
 
 root.mainloop()
