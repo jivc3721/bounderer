@@ -789,21 +789,31 @@ class CodingCanvas(tk.Canvas):
     def delete_link(self):
         icon1, icon2 = link[self.link_to_edit][0], link[self.link_to_edit][1]
 
+        # erase link from icon1 list of links
         links_list = list(action_icon[icon1].links)
         links_list.remove(self.link_to_edit)
         action_icon[icon1].links = tuple(links_list)
 
+        # erase link from icon2 list of links
         links_list = list(action_icon[icon2].links)
         links_list.remove(self.link_to_edit)
         action_icon[icon2].links = tuple(links_list)
 
-
+        # erase the link from the link dictionary and link_to edit that is really a list with only
+        # one element
         del link[self.link_to_edit]
         self.delete(self.link_to_edit)
 
+        # bit to correct....the idea is to cjeck if there are more line lines to keep it connected.
         if action_icon[icon2].action != SETTING:
             action_icon[icon2].flow = UNCONNECTED
-        action_icon[icon2].orphan = True
+            action_icon[icon2].orphan = True
+        else:
+            unconnected_links = action_icon[icon2].unconnected_predecessors()
+            if not unconnected_links and action_icon[icon2].flow_parents():
+                action_icon[icon2].orphan = False
+            else:
+                action_icon[icon2].orphan = True
         self.actualize_flow(icon2)
 
                

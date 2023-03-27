@@ -128,6 +128,9 @@ class action :
 
     # it returns a list of links to orphan predecesors
     def unconnected_predecessors(self):
+        # basically from the self(current node) return those lnk that are unconnected, that is to say
+        # the predecesor [lnk][0] is unconnected and is connected to the current, but becasue the predecessor
+        # is unconnected this also is unconnected.
         return [lnk for lnk in self.links if action_icon[link[lnk][1]] == self and
                 action_icon[link[lnk][0]].flow == UNCONNECTED]
 
