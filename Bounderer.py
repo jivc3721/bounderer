@@ -240,7 +240,7 @@ class CodingCanvas(tk.Canvas):
     def has_focus(self):
         return self.focus()
 
-    # finds the maximun height (Y) for a cell in a row
+    # finds the maximun height (Y) for a cell in a row (considering the text fields)
     def maxy_row(self, row):
         if row < 0 or row >= len(coding_sheet):
             return 0
@@ -251,6 +251,7 @@ class CodingCanvas(tk.Canvas):
                     y = max([y, self.fit_box(coding_sheet[row][i])[3]])
         return y
 
+    # finds the maximun height (Y) for the boxes below the text
     def maxy_row_box(self, row):
         if row < 0 or row >= len(coding_sheet):
             return 0
@@ -299,7 +300,7 @@ class CodingCanvas(tk.Canvas):
             t_y -= 10
         if t_y <= self.canvasy(0):
             return -1
-        elif t_y > self.canvasy(window_height):
+        elif t_y > self.canvasy(int(window_height)):
             return 1
         else:
             return 0
@@ -388,11 +389,14 @@ class CodingCanvas(tk.Canvas):
             self.fit_box_text(current_row)
             self.fix_graph(current_row)
             self.update_idletasks()
-            box_all = self.bbox('all')
+            bx1, by1, bx2, by2 = self.bbox('all')
             self.print_state(item)
-            self.configure(scrollregion=(0, 0, 1366, box_all[3]))
-            self.print_state(item)
-            self.yview_scroll(0, tk.UNITS)
+            scrollregion = self.cget("scrollregion")
+            sx1, sy1, sx2, sy2 = map(float, scrollregion.split())
+            if sy2 != by2 :
+                self.configure(scrollregion=(0, 0, 1366, by2))
+                self.print_state(item)
+                self.yview_scroll(0, tk.UNITS)
 
 ##___________________________End Actualising Adapting Visualization
 ##_________________________________________________________________
@@ -773,6 +777,12 @@ class CodingCanvas(tk.Canvas):
                 self.coords(tk.CURRENT, x-self.icon_dx, ry1+delta_y)
                 action_icon[self.find_withtag(tk.CURRENT)[0]].delta_x = x-self.icon_dx
                 action_icon[self.find_withtag(tk.CURRENT)[0]].row = icon_row
+
+# Spacial case in which a Setting is move to row 0 and becomes prime SETTING
+                if action_icon[icon_id].action == SETTING and icon_row == 0:
+                    action_icon[icon_id].orphan = False
+                    self.actualize_flow(icon_id)
+
         if error_move:
             rx1, ry1, rx2, ry2 = self.bbox(coding_sheet[action_icon[icon_id].row][ACTIONS_COLUMN])
             delta_y = (ry2-ry1-25)/2  # for centring the icon on y axis
@@ -832,7 +842,7 @@ class CodingCanvas(tk.Canvas):
         return [icon for icon in overlapping_items if self.type(icon) == "image"]
 
     def setting_in_row(self, row):
-        # returns true is there is already a Setting on the row
+        # returns the iconID is there is already a Setting on the row
         # get the items overlapping cell of icons in that row
         icons = self.icons_in_row(row)
         for icon in icons:
@@ -1172,6 +1182,12 @@ class CodingCanvas(tk.Canvas):
 
     def insert_row(self, row, contents=[]):
         global current_row, current_column
+        # Setting in the first row lose the prime Setting status when moved downwards
+        setting_icon = self.setting_in_row(row)
+        if setting_icon and row == 0:
+            action_icon[setting_icon].orphan = True
+            self.actualize_flow(setting_icon)
+
         if row < len(coding_sheet):  # if we insert before last line, we need to select lines to push down
             self.addtag_overlapping("move", 0, self.maxy_row(row-1) + CELL_GAP_Y-1, 1367,
                                         self.maxy_row(len(coding_sheet) - 1) + GAP_FOR_LINE)
