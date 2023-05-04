@@ -645,6 +645,10 @@ class CodingCanvas(tk.Canvas):
                                    action=icon, delta_x=self.click_x)
             if icon == SETTING:
                 self.numbering_new_setting(item)
+            else:
+                prev_flow = self.get_previous_nonSetting(item)
+                action_icon[item].flow = prev_flow - 1
+                self.renumbering_non_settings(item, prev_flow)
         else:
             self.error_message(error)
 
@@ -776,11 +780,17 @@ class CodingCanvas(tk.Canvas):
 
                 self.coords(tk.CURRENT, x-self.icon_dx, ry1+delta_y)
                 action_icon[self.find_withtag(tk.CURRENT)[0]].delta_x = x-self.icon_dx
+                icon_oldrow = action_icon[self.find_withtag(tk.CURRENT)[0]].row
                 action_icon[self.find_withtag(tk.CURRENT)[0]].row = icon_row
 
-# Spacial case in which a Setting is move to row 0 and becomes prime SETTING
+# Special case in which a Setting is move to row 0 and becomes prime SETTING
                 if action_icon[icon_id].action == SETTING and icon_row == 0:
                     action_icon[icon_id].orphan = False
+                    self.actualize_flow(icon_id)
+# special case Setting when moved it loses Prime status
+
+                if action_icon[icon_id].action == SETTING and icon_oldrow == 0 and icon_row > 0:
+                    action_icon[icon_id].orphan = True
                     self.actualize_flow(icon_id)
 
         if error_move:
@@ -850,16 +860,6 @@ class CodingCanvas(tk.Canvas):
                 return icon
         return 0
 
-    # TO DELETE?
-    # def find_floworigen(self, icon):
-    #     flow = action_icon[icon].flow
-    #     settings_list = [key for key in action_icon.keys()
-    #                     if action_icon[key].flow == flow and action_icon[key].action == SETTING]
-    #     if settings_list:
-    #         return settings_list[0]
-    #     else:
-    #         return UNCONNECTED
-
     def numbering_new_setting(self, iconID):
         # First it will assign a new number to the Setting
         # then it will fix numeration for all the other Settings
@@ -887,8 +887,27 @@ class CodingCanvas(tk.Canvas):
             else:
                 action_icon[icon].flow = action_icon[icon].flow + 1
 
+    def get_previous_nonSetting(self, icon_id):
+        row = action_icon[icon_id].row
+        while row >= 0:
+            icons = self.icons_in_row(row)
+            non_settings = [icon for icon in icons if action_icon[icon].action != SETTING and icon != icon_id]
+            if non_settings:
+                candidates = [icon for icon in non_settings if not action_icon[icon].flow_parents()]
+                if candidates:
+                    min_flow = -1
+                    for c in candidates:
+                        min_flow = action_icon[c].flow if action_icon[c].flow < min_flow else min_flow
+                    return min_flow
+            row -= 1
+        return 0
 
-##_______________________________ Validations-Rules-Boundary Games "Grammar"
+    def renumbering_non_settings(self, icon_id, prev_flow):
+        for icon in action_icon.keys():
+            action_icon[icon].flow = action_icon[icon].flow-1 if action_icon[icon].flow < prev_flow \
+                 and icon_id != icon else action_icon[icon].flow
+
+            ##_______________________________ Validations-Rules-Boundary Games "Grammar"
 ##__________________________________________________________________________
 
 
