@@ -905,7 +905,7 @@ class CodingCanvas(tk.Canvas):
     def renumbering_non_settings(self, icon_id, prev_flow):
         for icon in action_icon.keys():
             action_icon[icon].flow = action_icon[icon].flow-1 if action_icon[icon].flow < prev_flow \
-                 and icon_id != icon else action_icon[icon].flow
+                 and icon_id != icon and icon < 0 else action_icon[icon].flow
 
             ##_______________________________ Validations-Rules-Boundary Games "Grammar"
 ##__________________________________________________________________________

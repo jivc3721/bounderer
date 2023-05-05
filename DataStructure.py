@@ -176,9 +176,9 @@ class action :
     # returns the ID number of the icon next to this in the same flow. returns 0 if there is none
     def next_inflow(self):
         #it looks through the links of this icon, and creates a list of those links that lead to next icon in the
-        # the same flow. Same flow here is number of flow is the same or the number is unconnected.
+        # the same flow. Same flow here is number of flow is the same or the number is unconnected (flow <0).
         tmp = [lnk for lnk in self.links if (action_icon[link[lnk][1]].flow == self.flow or
-                                             action_icon[link[lnk][1]].flow == UNCONNECTED) and
+                                             action_icon[link[lnk][1]].flow < 0) and
                action_icon[link[lnk][1]] != self]
         if tmp:
             # the link is a tuple with a pair of actionsID (numbers). The second one is the action that
