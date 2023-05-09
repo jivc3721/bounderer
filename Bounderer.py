@@ -826,7 +826,9 @@ class CodingCanvas(tk.Canvas):
 
         # bit to correct....the idea is to cjeck if there are more line lines to keep it connected.
         if action_icon[icon2].action != SETTING:
-            action_icon[icon2].flow = UNCONNECTED
+            # action_icon[icon2].flow = UNCONNECTED
+            # action_icon[icon2].orphan = True
+            action_icon[icon2].flow = self.get_previous_nonSetting(icon2) - 1
             action_icon[icon2].orphan = True
         else:
             unconnected_links = action_icon[icon2].unconnected_predecessors()
