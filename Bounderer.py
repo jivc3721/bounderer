@@ -596,11 +596,15 @@ class CodingCanvas(tk.Canvas):
         # Actualize Menus predeccesors, suceesors
         itemsPre = self.predeccesorMenu.index(tk.END)
         itemsSucc = self.succesorMenu.index(tk.END)
+        check_var = []
         if itemsPre != None:
             self.predeccesorMenu.delete(0, itemsPre)
         predeccesors = action_icon[self.icon_to_edit].flow_parents()
         for flow in predeccesors:
-            self.predeccesorMenu.add_checkbutton(label=str(flow), indicatoron=1)
+            check_var.append(tk.IntVar())
+            self.predeccesorMenu.add_checkbutton(label=str(flow), variable=check_var[-1])
+            check_var[-1].set(1)
+
         if itemsSucc != None:
             self.succesorMenu.delete(0, itemsSucc)
 
@@ -953,8 +957,8 @@ class CodingCanvas(tk.Canvas):
                 # and all the predecessors are connected change the sublink to not orphan
                 if (not orphan_st) and action_icon[link[lk][1]].orphan and \
                         (not action_icon[link[lk][1]].unconnected_predecessors()):
-                    sublnk = action_icon[link[lk][1]].disseminate_toicons(link[lk][1],
-                                                                          action_icon[link[lk][1]].flow_color, False)
+                    sublnk = action_icon[link[lk][1]].disseminate_toicons\
+                        (link[lk][1], action_icon[link[lk][1]].flow_color, False)
                     for sl in sublnk:
                         self.itemconfigure(sl, fill=sblnk_color, dash=CONNECTED_DASH)
                 # if the parent flow is orphan and the sublink is not orphan, we need to put the sublink as orphan
@@ -1622,6 +1626,7 @@ def save_file():
             for i in range(number_of_columns):
                 if i != ACTIONS_COLUMN:
                     f.write(c.itemcget(row[i], 'text')+"\n")
+                    print(c.itemcget(row[0], 'text'))
                 f.write("#EF#\n")
         f.write("##icons##"+"\n")
         for icon in action_icon:  # saving the icons
