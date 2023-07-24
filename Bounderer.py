@@ -167,8 +167,13 @@ class CodingCanvas(tk.Canvas):
 
         # Contextual menu for editing boundary actions
         self.edit_actionMenu = tk.Menu(self, tearoff=0)
-        self.edit_actionMenu.add_command(label=" Erase ", command=self.delete_icon)
+        self.predeccesorMenu = tk.Menu(self.edit_actionMenu, tearoff=0)
+        self.succesorMenu = tk.Menu(self.edit_actionMenu, tearoff=0)
+        self.edit_actionMenu.add_cascade(label=" predeccesors", menu=self.predeccesorMenu)
+        self.edit_actionMenu.add_cascade(label=" Sucessors", menu=self.succesorMenu)
         self.edit_actionMenu.add_command(label=" Edit ", command=self.edit_action)
+        self.edit_actionMenu.add_separator()
+        self.edit_actionMenu.add_command(label=" Erase ", command=self.delete_icon)
 
         # calculating screen positions
         x1 = 0
@@ -532,6 +537,12 @@ class CodingCanvas(tk.Canvas):
                 if not (error_number := self.error_link(icon1, icon2)):
                     self.create_link(icon1, icon2)
                     self.actualize_flow(icon1)
+                    if action_icon[icon2].action != SETTING:
+                        # now we have a whole in the numbering....so fix
+                        for icon in action_icon.keys():
+                            action_icon[icon].flow = action_icon[icon].flow + 1 \
+                                if action_icon[icon].flow < action_icon[icon2].flow and \
+                                   action_icon[icon].flow <0 else action_icon[icon].flow
                     self.itemconfigure(self.first_icon, state=tk.NORMAL)
                     self.config(cursor="arrow")
                     self.ready_forlink = False
@@ -557,7 +568,7 @@ class CodingCanvas(tk.Canvas):
         elif "icon" in tags:
             self.first_icon = self.find_withtag(tk.CURRENT)[0]
             self.itemconfigure(self.first_icon, state=tk.DISABLED)
-            self.config(cursor="icon")
+            self.config(cursor="target")
             self.ready_forlink = True
 
 ##________________________________ Single and Double Click Management
@@ -582,6 +593,18 @@ class CodingCanvas(tk.Canvas):
         x = self.canvasx(event.x)
         y = self.canvasy(event.y)
         self.icon_to_edit = self.find_withtag(tk.CURRENT)[0]
+        # Actualize Menus predeccesors, suceesors
+        itemsPre = self.predeccesorMenu.index(tk.END)
+        itemsSucc = self.succesorMenu.index(tk.END)
+        if itemsPre != None:
+            self.predeccesorMenu.delete(0, itemsPre)
+        predeccesors = action_icon[self.icon_to_edit].flow_parents()
+        for flow in predeccesors:
+            self.predeccesorMenu.add_checkbutton(label=str(flow), indicatoron=1)
+        if itemsSucc != None:
+            self.succesorMenu.delete(0, itemsSucc)
+
+
         self.edit_actionMenu.post(event.x_root, event.y_root)
 
     def error_change(self, icon_id, new_action):
@@ -1807,14 +1830,20 @@ tc.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
 menubar = tk.Menu(root)
 
 menuFile = tk.Menu(menubar, tearoff=0)
+
+menuExport = tk.Menu(menuFile, tearoff=0)
+menuExport.add_command(label="PDF", command=print_coding)
+menuExport.add_command(label="Excel", command=export_excel)
+
 menuFile.add_command(label="New", command=nothing_to_do)
 menuFile.add_command(label="Open", command=open_file)
-menuFile.add_command(label="Save", command=save_file)
+menuFile.add_command(label="Save As...", command=save_file)
 menuFile.add_command(label="Import", command=import_file)
-menuFile.add_command(label="Export Postscript", command=print_coding)
-menuFile.add_command(label="Export Excel", command=export_excel)
-menuFile.add_command(label="Export Network", command=export_graph)
+menuFile.add_cascade(label="Export coding", menu=menuExport)
+menuFile.add_command(label="Export Tree", command=export_graph)
 menuFile.add_command(label="Exit", command=nothing_to_do)
+
+
 
 menuView = tk.Menu(menubar, tearoff=0)
 menuView.add_command(label="Coding", command=bring_coding_view)
@@ -1831,10 +1860,10 @@ menuSettings.add_command(label="distances", command=nothing_to_do)
 
 menubar.add_cascade(label="File", menu=menuFile)
 menubar.add_cascade(label="View", menu=menuView)
-menubar.add_cascade(label="Verify", menu=menuVerify)
-menubar.add_cascade(label="Settings", menu=menuSettings)
+# menubar.add_cascade(label="Verify", menu=menuVerify)
+# menubar.add_cascade(label="Settings", menu=menuSettings)
 menubar.add_command(label="About", command=nothing_to_do)
-menubar.add_command(label="Search", command=nothing_to_do)
+# menubar.add_command(label="Search", command=nothing_to_do)
 
 codingfile = ""
 
