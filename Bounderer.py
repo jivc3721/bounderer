@@ -171,6 +171,7 @@ class CodingCanvas(tk.Canvas):
         self.predeccesorMenu = tk.Menu(self.edit_actionMenu, tearoff=0)
         self.succesorMenu = tk.Menu(self.edit_actionMenu, tearoff=0)
         self.checkbox_var = []
+        self.cb_predeccesors = []
         self.edit_actionMenu.add_cascade(label=" predeccesors", menu=self.predeccesorMenu)
         self.edit_actionMenu.add_cascade(label=" Sucessors", menu=self.succesorMenu)
         self.edit_actionMenu.add_command(label=" Edit ", command=self.edit_action)
@@ -606,20 +607,21 @@ class CodingCanvas(tk.Canvas):
         itemsPre = self.predeccesorMenu.index(tk.END)
         itemsSucc = self.succesorMenu.index(tk.END)
         self.checkbox_var.clear()
+        self.cb_predeccesors.clear()
         if itemsPre != None:
             self.predeccesorMenu.delete(0, itemsPre)
-        predeccesors = action_icon[self.icon_to_edit].flow_parents()
-        for flow in predeccesors:
+        self.cb_predeccesors = action_icon[self.icon_to_edit].flow_parents()
+        for flow in self.cb_predeccesors:
             self.checkbox_var.append(tk.IntVar())
             self.predeccesorMenu.add_checkbutton(label=str(flow), variable=self.checkbox_var[-1],
-                                                 command=lambda: self.toggle_lnkupvisibility(flow))
+                                                 command=lambda flow = flow: self.toggle_lnkupvisibility(flow))
+            print("flow in menu icon:", flow)
             lnk = action_icon[self.icon_to_edit].flowup_tolink(flow)
             chkb_state = 1 if self.itemcget(lnk, "state") == tk.NORMAL else 0
             self.checkbox_var[-1].set(chkb_state)
 
         if itemsSucc != None:
             self.succesorMenu.delete(0, itemsSucc)
-
 
         self.edit_actionMenu.post(event.x_root, event.y_root)
 
