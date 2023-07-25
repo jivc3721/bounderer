@@ -167,13 +167,16 @@ class CodingCanvas(tk.Canvas):
 
         # Contextual menu for editing boundary actions
         self.edit_actionMenu = tk.Menu(self, tearoff=0)
+        #     Checkboxes for flows in menu
         self.predeccesorMenu = tk.Menu(self.edit_actionMenu, tearoff=0)
         self.succesorMenu = tk.Menu(self.edit_actionMenu, tearoff=0)
+        self.checkbox_var = []
         self.edit_actionMenu.add_cascade(label=" predeccesors", menu=self.predeccesorMenu)
         self.edit_actionMenu.add_cascade(label=" Sucessors", menu=self.succesorMenu)
         self.edit_actionMenu.add_command(label=" Edit ", command=self.edit_action)
         self.edit_actionMenu.add_separator()
         self.edit_actionMenu.add_command(label=" Erase ", command=self.delete_icon)
+
 
         # calculating screen positions
         x1 = 0
@@ -428,7 +431,7 @@ class CodingCanvas(tk.Canvas):
 
         lnk = self.create_line(lx1, ly1, sx, sy, lx2, ly2, smooth=True, width=3,
                                fill=self.action_tkcolor(lnkcolor), activewidth=5,
-                               activefill=ACTIVE_LINKCOLOR, dash=lkdash, tag="link")
+                               activefill=ACTIVE_LINKCOLOR, dash=lkdash, tag="link", state=tk.NORMAL)
         self.tag_raise(icon1, lnk)
         self.tag_raise(icon2, lnk)
         link[lnk] = (icon1, icon2)
@@ -589,21 +592,30 @@ class CodingCanvas(tk.Canvas):
         else:
             self.error_message(401) # do not erase if this have links
 
+    def toggle_lnkupvisibility(self, flow):
+        lnk = action_icon[self.icon_to_edit].flowup_tolink(flow)
+        chkb_state = tk.HIDDEN if self.itemcget(lnk, "state") == tk.NORMAL else tk.NORMAL
+        self.itemconfigure(lnk, state=chkb_state)
+
     def menu_icon(self, event):
         x = self.canvasx(event.x)
         y = self.canvasy(event.y)
         self.icon_to_edit = self.find_withtag(tk.CURRENT)[0]
-        # Actualize Menus predeccesors, suceesors
+        # Actualize Menus predeccesors, suceesors, that is first knowing if there are items from previous run
+        #  abd then erase them. also clearing the list of control IntVar fro the checkboxes
         itemsPre = self.predeccesorMenu.index(tk.END)
         itemsSucc = self.succesorMenu.index(tk.END)
-        check_var = []
+        self.checkbox_var.clear()
         if itemsPre != None:
             self.predeccesorMenu.delete(0, itemsPre)
         predeccesors = action_icon[self.icon_to_edit].flow_parents()
         for flow in predeccesors:
-            check_var.append(tk.IntVar())
-            self.predeccesorMenu.add_checkbutton(label=str(flow), variable=check_var[-1])
-            check_var[-1].set(1)
+            self.checkbox_var.append(tk.IntVar())
+            self.predeccesorMenu.add_checkbutton(label=str(flow), variable=self.checkbox_var[-1],
+                                                 command=lambda: self.toggle_lnkupvisibility(flow))
+            lnk = action_icon[self.icon_to_edit].flowup_tolink(flow)
+            chkb_state = 1 if self.itemcget(lnk, "state") == tk.NORMAL else 0
+            self.checkbox_var[-1].set(chkb_state)
 
         if itemsSucc != None:
             self.succesorMenu.delete(0, itemsSucc)

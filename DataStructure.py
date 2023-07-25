@@ -134,6 +134,18 @@ class action :
         return [lnk for lnk in self.links if action_icon[link[lnk][1]] == self and
                 action_icon[link[lnk][0]].flow == UNCONNECTED]
 
+    def flowup_tolink(self, flow):
+        for lnk in self.links:
+            if action_icon[link[lnk][0]] != self and action_icon[link[lnk][0]].flow == flow :
+                return lnk
+        return None
+
+    def flowdwn_tolink(self, flow):
+        for lnk in self.links:
+            if action_icon[link[lnk][1]] != self and action_icon[link[lnk][0]].flow == flow :
+                return lnk
+        return None
+
     # return the flow number of the parents of the action
     def flow_parents(self):
         predecessors = [lnk for lnk in self.links if action_icon[link[lnk][0]] != self]
