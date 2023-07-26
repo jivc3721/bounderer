@@ -35,6 +35,7 @@ LINE_COLOR = "#DDD"     # divides rows.   softer gray (than the rectangle)
 # LINK_COLOR = "#D77"     # a red similar to the first illustrations of boundary games
 # ORPHAN_LINKCOLOR = "#999" # a gray a little darker than the separation lines
 ACTIVE_LINKCOLOR = "#5E7FD9"  # the idea is a blue similar to menus. You are choosing to do something with the link
+INVISIBLE_MARKCOLOR = "#FF2424"
 
 LK_DEFAULTCOLOR =  0       # a red similar to the first illustrations of boundary games
 ORPHAN_LINKCOLOR = 8  # a gray a little darker than the separation lines
@@ -593,10 +594,36 @@ class CodingCanvas(tk.Canvas):
         else:
             self.error_message(401) # do not erase if this have links
 
+    def put_mark_invisibility(self, icon, state, up_down):
+        x1, y1, x2, y2 = self.bbox(icon)
+        objects = self.find_enclosed(x1, y1, x2, y2)
+        mark_up = [obj for obj in objects if "invisible_up" in self.itemcget(obj, "tag")]
+        mark_dwn = [obj for obj in objects if "invisible_down" in self.itemcget(obj, "tag")]
+        if state == 1:
+            if up_down == 1:
+                if not mark_up:
+                    self.create_oval(x2 - 10, y1, x2, y1 + 10, fill=INVISIBLE_MARKCOLOR, tag="invisible_up")
+            elif not mark_dwn:
+                self.create_oval(x1, y2 - 10, x1 + 10, y2, fill=INVISIBLE_MARKCOLOR, tag="invisible_down")
+        else:
+            if up_down == 1 and mark_up:
+                pass
+                #borre marca "invisible_up"
+            elif up_down == 0 and mark_dwn:
+                pass
+                #borre marca "invisible_down"
+# i also need a function to say if there are invisible links in this icon up and down
+
+
     def toggle_lnkupvisibility(self, flow):
         lnk = action_icon[self.icon_to_edit].flowup_tolink(flow)
         chkb_state = tk.HIDDEN if self.itemcget(lnk, "state") == tk.NORMAL else tk.NORMAL
         self.itemconfigure(lnk, state=chkb_state)
+        # x1, y1, x2, y2 = self.bbox(self.icon_to_edit)
+        # lnk = self.create_polygon(x1, y1+10, x1, y1, x1+10, y1, x1, y1+10, width=1,
+        #                        fill=INVISIBLE_MARKCOLOR, tag="invisible_up", state=tk.NORMAL)
+        # self.create_oval(x2-10, y1, x2, y1+10, fill=INVISIBLE_MARKCOLOR)
+        # self.create_oval(x1, y2-10, x1+10, y2, fill=INVISIBLE_MARKCOLOR)
 
     def menu_icon(self, event):
         x = self.canvasx(event.x)
