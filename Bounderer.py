@@ -621,7 +621,8 @@ class CodingCanvas(tk.Canvas):
             elif up_down == DOWN and mark_dwn:
                 self.delete(mark_dwn[0])
 
-  # I also need a function to say if there are invisible links in this icon up and down
+  # I also need a function to say if there are invisible links in this icon up and down it seems easy...
+  #   just a list of the links...a for to go thought them and a single hidden is enought
 
 
     def toggle_lnkupvisibility(self, flow):
