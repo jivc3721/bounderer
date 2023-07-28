@@ -654,6 +654,7 @@ class CodingCanvas(tk.Canvas):
         if itemsPre != None:
             self.predeccesorMenu.delete(0, itemsPre)
         self.cb_predeccesors = action_icon[self.icon_to_edit].flow_parents()
+        self.cb_predeccesors.sort()
         for flow in self.cb_predeccesors:
             self.checkbox_var.append(tk.IntVar())
             self.predeccesorMenu.add_checkbutton(label=str(flow), variable=self.checkbox_var[-1],
