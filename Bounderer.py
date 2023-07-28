@@ -621,18 +621,24 @@ class CodingCanvas(tk.Canvas):
             elif up_down == DOWN and mark_dwn:
                 self.delete(mark_dwn[0])
 
-  # I also need a function to say if there are invisible links in this icon up and down it seems easy...
-  #   just a list of the links...a for to go thought them and a single hidden is enought
-
+    def invisible_links(self, icon, up_down=UP):
+        if up_down == UP:
+            link_list = [lnk for lnk in action_icon[icon].links if action_icon[link[lnk][0]] != self]
+        else:
+            link_list = [lnk for lnk in action_icon[icon].links if action_icon[link[lnk][1]] != self]
+        for lnk in link_list:
+            if self.itemcget(lnk, "state") == tk.HIDDEN:
+                return True
+        return False
 
     def toggle_lnkupvisibility(self, flow):
         lnk = action_icon[self.icon_to_edit].flowup_tolink(flow)
         chkb_state = tk.HIDDEN if self.itemcget(lnk, "state") == tk.NORMAL else tk.NORMAL
         self.itemconfigure(lnk, state=chkb_state)
         if chkb_state == tk.HIDDEN:
-            self.put_mark_invisibility(self.icon_to_edit, state=ON)
-        else:
-            self.put_mark_invisibility(self.icon_to_edit, state=OFF)
+            self.put_mark_invisibility(self.icon_to_edit, state=ON, up_down=UP)
+        elif not self.invisible_links(self.icon_to_edit, up_down=UP):
+            self.put_mark_invisibility(self.icon_to_edit, state=OFF, up_down=UP)
 
 
     def menu_icon(self, event):
