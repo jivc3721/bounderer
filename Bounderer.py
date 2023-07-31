@@ -178,9 +178,7 @@ class CodingCanvas(tk.Canvas):
         #     Checkboxes for flows in menu
         self.predeccesorMenu = tk.Menu(self.edit_actionMenu, tearoff=0)
         self.succesorMenu = tk.Menu(self.edit_actionMenu, tearoff=0)
-        self.checkbox_var = []
-        self.cb_predeccesors = []
-        self.edit_actionMenu.add_cascade(label=" predeccesors", menu=self.predeccesorMenu)
+        self.edit_actionMenu.add_cascade(label=" Predeccesors", menu=self.predeccesorMenu)
         self.edit_actionMenu.add_cascade(label=" Sucessors", menu=self.succesorMenu)
         self.edit_actionMenu.add_command(label=" Edit ", command=self.edit_action)
         self.edit_actionMenu.add_separator()
@@ -207,7 +205,6 @@ class CodingCanvas(tk.Canvas):
 
         # variables for information window for icons
         self.info_window_on = False
-        self.info_window_ID = 0
 
         # variables for window for icon data entry
         self.canvas_window = 0
@@ -237,7 +234,10 @@ class CodingCanvas(tk.Canvas):
         self.tag_bind("field", "<Button-1>", self.mvinsertion_cursor)
 
         self.tag_bind("icon", "<Button-1>", self.info_window_i)
+        self.tag_bind("link", "<Button-1>", self.info_window_lnk)
+
         self.tag_bind("icon", "<B1-ButtonRelease>", self.close_info_window)
+        self.tag_bind("link", "<B1-ButtonRelease>", self.close_info_window)
 
         self.bind("<Double-Button-1>", self.double_click)
 
@@ -509,19 +509,43 @@ class CodingCanvas(tk.Canvas):
         self.icursor(item, "@%d,%d" % (x, y))
         self.select_clear()
 
+    def info_window_lnk(self, event):
+        # translate to the canvas coordinate system
+        x = self.canvasx(event.x)
+        y = self.canvasy(event.y)
+        lnk = self.find_withtag(tk.CURRENT)[0]
+        icon1 = link[lnk][0]
+        icon2 = link[lnk][1]
+        label = "------------------------------" + "\n" + \
+                "row   : " + str(action_icon[icon1].row) + "\n" +   \
+                "flow  : " + str(action_icon[icon1].flow)
+
+        text = self.create_text(x, y, justify=tk.LEFT, width=250, text=label, tags="info_window", anchor=tk.N)
+        x1, y1, x2, y2 = self.bbox(text)
+        rect = self.create_rectangle(x1-3, y1-3, x2+3, y2+3, fill="cyan", tags="info_window", width=2)
+        self.tag_lower(rect, text)
+        # create multiple elements for the window with a tag "info_window" so when erased just erase all
+        # with the tag
+        # perhaps create first the text and then make rectangle as big as text(just as when loading file)
+        self.info_window_on = True
+
 #single click on an icon to display info window
     def info_window_i(self, event):
         # translate to the canvas coordinate system
         x = self.canvasx(event.x)
         y = self.canvasy(event.y)
         icon = self.find_withtag(tk.CURRENT)[0]
+        location = self.bbox(icon)
         label = "------------------------------" + "\n" + \
                 "row   : " + str(action_icon[icon].row) + "\n" +   \
                 "flow  : " + str(action_icon[icon].flow) + "\n" + \
                 "note  : " + (action_icon[icon].note) + "\n" + \
                 "tag   : " + self.gettags(icon)[0] + "\n" + \
-                "Orphan: " + str(action_icon[icon].orphan) + "\n" +   \
+                "location: " + str(location[0]) + "," + str(location[1]) + "," + \
+                str(location[2]) + "," + str(location[3]) + "\n" + \
                 "IconID: " + str(icon)
+        # "Orphan: " + str(action_icon[icon].orphan) + "\n" +   \
+
         text = self.create_text(x, y, justify=tk.LEFT, width=250, text=label, tags="info_window", anchor=tk.N)
         x1, y1, x2, y2 = self.bbox(text)
         rect = self.info_window_ID = self.create_rectangle(x1-3, y1-3, x2+3, y2+3, fill="yellow", tags="info_window", width=2)
@@ -621,11 +645,18 @@ class CodingCanvas(tk.Canvas):
             elif up_down == DOWN and mark_dwn:
                 self.delete(mark_dwn[0])
 
+    # Odd plce for this function. It is used when moving an icon. The idea is to turn off the
+    # invisibility marks wothout questions and the once the icon is in the new place if ask if there are
+    # invisible links in order to put the mark again
     def invisible_links(self, icon, up_down=UP):
+        link_list = []
+        link_list.clear()
         if up_down == UP:
-            link_list = [lnk for lnk in action_icon[icon].links if action_icon[link[lnk][0]] != self]
+            link_list = [lnk for lnk in action_icon[icon].links if link[lnk][0] != icon]
         else:
-            link_list = [lnk for lnk in action_icon[icon].links if action_icon[link[lnk][1]] != self]
+            link_list = [lnk for lnk in action_icon[icon].links if link[lnk][1] != icon]
+        if not link_list:
+            return False
         for lnk in link_list:
             if self.itemcget(lnk, "state") == tk.HIDDEN:
                 return True
@@ -633,39 +664,62 @@ class CodingCanvas(tk.Canvas):
 
     def toggle_lnkupvisibility(self, flow):
         lnk = action_icon[self.icon_to_edit].flowup_tolink(flow)
+        icon2 = link[lnk][0]
         chkb_state = tk.HIDDEN if self.itemcget(lnk, "state") == tk.NORMAL else tk.NORMAL
         self.itemconfigure(lnk, state=chkb_state)
         if chkb_state == tk.HIDDEN:
             self.put_mark_invisibility(self.icon_to_edit, state=ON, up_down=UP)
+            self.put_mark_invisibility(icon2, state=ON, up_down=DOWN)
         elif not self.invisible_links(self.icon_to_edit, up_down=UP):
             self.put_mark_invisibility(self.icon_to_edit, state=OFF, up_down=UP)
+            self.put_mark_invisibility(icon2, state=OFF, up_down=DOWN)
 
+    def toggle_lnkdwnvisibility(self, flow):
+        lnk = action_icon[self.icon_to_edit].flowdwn_tolink(flow)
+        icon2 = link[lnk][1]
+        chkb_state = tk.HIDDEN if self.itemcget(lnk, "state") == tk.NORMAL else tk.NORMAL
+        self.itemconfigure(lnk, state=chkb_state)
+        if chkb_state == tk.HIDDEN:
+            self.put_mark_invisibility(self.icon_to_edit, state=ON, up_down=DOWN)
+            self.put_mark_invisibility(icon2, state=ON, up_down=UP)
+        elif not self.invisible_links(self.icon_to_edit, up_down=UP):
+            self.put_mark_invisibility(self.icon_to_edit, state=OFF, up_down=DOWN)
+            self.put_mark_invisibility(icon2, state=OFF, up_down=UP)
 
     def menu_icon(self, event):
         x = self.canvasx(event.x)
         y = self.canvasy(event.y)
         self.icon_to_edit = self.find_withtag(tk.CURRENT)[0]
+
         # Actualize Menus predeccesors, suceesors, that is first knowing if there are items from previous run
         #  abd then erase them. also clearing the list of control IntVar fro the checkboxes
+        p_checkbox_var = []
         itemsPre = self.predeccesorMenu.index(tk.END)
-        itemsSucc = self.succesorMenu.index(tk.END)
-        self.checkbox_var.clear()
-        self.cb_predeccesors.clear()
         if itemsPre != None:
             self.predeccesorMenu.delete(0, itemsPre)
-        self.cb_predeccesors = action_icon[self.icon_to_edit].flow_parents()
-        self.cb_predeccesors.sort()
-        for flow in self.cb_predeccesors:
-            self.checkbox_var.append(tk.IntVar())
-            self.predeccesorMenu.add_checkbutton(label=str(flow), variable=self.checkbox_var[-1],
-                                                 command=lambda flow = flow: self.toggle_lnkupvisibility(flow))
-            print("flow in menu icon:", flow)
+        cb_predeccesors = action_icon[self.icon_to_edit].flow_parents()
+        cb_predeccesors.sort()
+        for flow in cb_predeccesors:
+            p_checkbox_var.append(tk.IntVar())
+            self.predeccesorMenu.add_checkbutton(label=str(flow), variable=p_checkbox_var[-1],
+                                                 command=lambda flow=flow: self.toggle_lnkupvisibility(flow))
             lnk = action_icon[self.icon_to_edit].flowup_tolink(flow)
             chkb_state = 1 if self.itemcget(lnk, "state") == tk.NORMAL else 0
-            self.checkbox_var[-1].set(chkb_state)
+            p_checkbox_var[-1].set(chkb_state)
 
+        s_checkbox_var = []
+        itemsSucc = self.succesorMenu.index(tk.END)
         if itemsSucc != None:
             self.succesorMenu.delete(0, itemsSucc)
+        cb_succesors = action_icon[self.icon_to_edit].flow_descendents()
+        cb_succesors.sort()
+        for flow in cb_succesors:
+            s_checkbox_var.append(tk.IntVar())
+            self.succesorMenu.add_checkbutton(label=str(flow), variable=s_checkbox_var[-1],
+                                                 command=lambda flow=flow: self.toggle_lnkdwnvisibility(flow))
+            lnk = action_icon[self.icon_to_edit].flowdwn_tolink(flow)
+            chkb_state = 1 if self.itemcget(lnk, "state") == tk.NORMAL else 0
+            s_checkbox_var[-1].set(chkb_state)
 
         self.edit_actionMenu.post(event.x_root, event.y_root)
 
@@ -778,12 +832,21 @@ class CodingCanvas(tk.Canvas):
     def icon_to_move(self, event):
         x = self.canvasx(event.x)
         y = self.canvasy(event.y)
-        if "icon" in self.gettags(self.find_overlapping(x, y, x, y)):
-            self.to_thefront(tk.CURRENT) 
+        icon = self.find_withtag(tk.CURRENT)[0]
+        item_tags = self.gettags(icon)
+        print(item_tags)
+        if "icon" in item_tags:
+            #         turn off the markings of invisibility before moving
+            icon = self.find_withtag(tk.CURRENT)[0]
+            print("icon::::::::", icon)
+            self.put_mark_invisibility(icon, state=OFF, up_down=UP)
+            self.put_mark_invisibility(icon, state=OFF, up_down=DOWN)
+
+            self.to_thefront(tk.CURRENT)
             coords = self.coords(tk.CURRENT)
             self.icon_dx = x - coords[0]
-            self.icon_dy = y - coords[1]  
-    
+            self.icon_dy = y - coords[1]
+
     def move_icon(self, event):
         x = self.canvasx(event.x)
         y = self.canvasy(event.y)
@@ -884,6 +947,12 @@ class CodingCanvas(tk.Canvas):
             self.coords(tk.CURRENT, action_icon[icon_id].delta_x, ry1 + delta_y)
             self.error_message(error_move)
         self.redraw_iconlinks(icon_id)
+
+        # re-establishing invisibility marks
+        if self.invisible_links(icon_id, up_down=UP):
+            self.put_mark_invisibility(icon_id, state=ON, up_down=UP)
+        if self.invisible_links(icon_id, up_down=DOWN):
+            self.put_mark_invisibility(icon_id, state=ON, up_down=DOWN)
 
     def menu_link(self, event):
         x = self.canvasx(event.x)

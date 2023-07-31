@@ -142,7 +142,7 @@ class action :
 
     def flowdwn_tolink(self, flow):
         for lnk in self.links:
-            if action_icon[link[lnk][1]] != self and action_icon[link[lnk][0]].flow == flow :
+            if action_icon[link[lnk][1]] != self and action_icon[link[lnk][1]].flow == flow :
                 return lnk
         return None
 
@@ -153,6 +153,13 @@ class action :
         for p in predecessors:
             parents.append(action_icon[link[p][0]].flow)
         return parents
+
+    def flow_descendents(self):
+        succesors = [lnk for lnk in self.links if action_icon[link[lnk][1]] != self]
+        descendents = []
+        for p in succesors:
+            descendents.append(action_icon[link[p][1]].flow)
+        return descendents
 
     # return the ID numbers of the icons parents to this action
     def icon_parents(self):
