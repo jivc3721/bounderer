@@ -516,13 +516,17 @@ class CodingCanvas(tk.Canvas):
         lnk = self.find_withtag(tk.CURRENT)[0]
         icon1 = link[lnk][0]
         icon2 = link[lnk][1]
-        label = "------------------------------" + "\n" + \
-                "row   : " + str(action_icon[icon1].row) + "\n" +   \
-                "flow  : " + str(action_icon[icon1].flow)
+        label = "flow  : " + str(action_icon[icon1].flow) + "\n" + \
+                ICON_NAME[action_icon[icon1].action] + " : " + action_icon[icon1].note + "\n" + \
+                "row   : " + str(action_icon[icon1].row) + "\n" + \
+                "»»»»»»»»»»»»»»»»" + "\n" + \
+                "flow  : " + str(action_icon[icon2].flow) + "\n" + \
+                ICON_NAME[action_icon[icon2].action] + " :  " + action_icon[icon2].note + "\n" + \
+                "row   : " + str(action_icon[icon2].row)
 
         text = self.create_text(x, y, justify=tk.LEFT, width=250, text=label, tags="info_window", anchor=tk.N)
         x1, y1, x2, y2 = self.bbox(text)
-        rect = self.create_rectangle(x1-3, y1-3, x2+3, y2+3, fill="cyan", tags="info_window", width=2)
+        rect = self.create_rectangle(x1-3, y1-3, x2+3, y2+3, fill="Cyan", tags="info_window", width=2)
         self.tag_lower(rect, text)
         # create multiple elements for the window with a tag "info_window" so when erased just erase all
         # with the tag
@@ -535,16 +539,17 @@ class CodingCanvas(tk.Canvas):
         x = self.canvasx(event.x)
         y = self.canvasy(event.y)
         icon = self.find_withtag(tk.CURRENT)[0]
-        location = self.bbox(icon)
-        label = "------------------------------" + "\n" + \
-                "row   : " + str(action_icon[icon].row) + "\n" +   \
+        # location = self.bbox(icon)
+        label = ICON_NAME[action_icon[icon].action] + "»»»»»»»»" + "\n" + \
                 "flow  : " + str(action_icon[icon].flow) + "\n" + \
                 "note  : " + (action_icon[icon].note) + "\n" + \
-                "tag   : " + self.gettags(icon)[0] + "\n" + \
-                "location: " + str(location[0]) + "," + str(location[1]) + "," + \
-                str(location[2]) + "," + str(location[3]) + "\n" + \
-                "IconID: " + str(icon)
+                "\n"
+                # "row   : " + str(action_icon[icon].row) + \
+                # "IconID: " + str(icon)
         # "Orphan: " + str(action_icon[icon].orphan) + "\n" +   \
+        #         "tag   : " + self.gettags(icon)[0] + "\n" + \
+        #         "location: " + str(location[0]) + "," + str(location[1]) + "," + \
+        #         str(location[2]) + "," + str(location[3]) + "\n" + \
 
         text = self.create_text(x, y, justify=tk.LEFT, width=250, text=label, tags="info_window", anchor=tk.N)
         x1, y1, x2, y2 = self.bbox(text)

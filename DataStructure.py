@@ -18,6 +18,8 @@ PROBING     = 3
 CHALLENGING = 4
 ENHANCING   = 5
 
+ICON_NAME = ["Setting", "Following", "Wandering", "Probing", "Challenging", "Enhancing"]
+
 NO_ICON     = -1
 
 UNCONNECTED      = -1
