@@ -576,14 +576,15 @@ class CodingCanvas(tk.Canvas):
                 if action_icon[icon1].row > action_icon[icon2].row:
                     icon1, icon2 = icon2, icon1
                 if not (error_number := self.error_link(icon1, icon2)):
+                    old_flow = action_icon[icon2].flow
                     self.create_link(icon1, icon2)
                     self.actualize_flow(icon1)
                     if action_icon[icon2].action != SETTING:
-                        # now we have a whole in the numbering....so fix
+                        # now we have a hole in the numbering....so fix
                         for icon in action_icon.keys():
                             action_icon[icon].flow = action_icon[icon].flow + 1 \
-                                if action_icon[icon].flow < action_icon[icon2].flow and \
-                                   action_icon[icon].flow <0 else action_icon[icon].flow
+                                if action_icon[icon].flow < old_flow and action_icon[icon].flow < 0  \
+                                else action_icon[icon].flow
                     self.itemconfigure(self.first_icon, state=tk.NORMAL)
                     self.config(cursor="arrow")
                     self.ready_forlink = False
@@ -777,17 +778,17 @@ class CodingCanvas(tk.Canvas):
         self.click_y = y
         self.boundarymenu.post(event.x_root, event.y_root)
 
-    def draw_icon(self, icon):
+    def draw_icon(self, type_icon):
         global action_icon
 
-        if not (error := self.error_icon(icon, self.icon_row)):
+        if not (error := self.error_icon(type_icon, self.icon_row)):
             rx1, ry1, rx2, ry2 = self.bbox(coding_sheet[self.icon_row][ACTIONS_COLUMN])
             delta_y = (ry2-ry1-25)/2  # for centring the icon on y axis
-            item = self.create_image(self.click_x, ry1 + delta_y, anchor=tk.NW, image=self.ICONS[icon], tags="icon",
-                                     disabledimage=self.ICONS[icon+6])
+            item = self.create_image(self.click_x, ry1 + delta_y, anchor=tk.NW, image=self.ICONS[type_icon],
+                                     tags="icon", disabledimage=self.ICONS[type_icon+6])
             action_icon[item] = action(row=self.icon_row, flow=UNCONNECTED,
-                                   action=icon, delta_x=self.click_x)
-            if icon == SETTING:
+                                   action=type_icon, delta_x=self.click_x)
+            if type_icon == SETTING:
                 self.numbering_new_setting(item)
             else:
                 prev_flow = self.get_previous_nonSetting(item)
@@ -1065,10 +1066,17 @@ class CodingCanvas(tk.Canvas):
 
     def renumbering_non_settings(self, icon_id, prev_flow):
         for icon in action_icon.keys():
+            action_icon[icon].flow = action_icon[icon].flow-1 if \
+                action_icon[icon].flow <= action_icon[icon_id].flow \
+                and action_icon[icon].row > action_icon[icon_id].row else action_icon[icon].flow
+
+
+    def renumbering_non_settingsOld(self, icon_id, prev_flow):
+        for icon in action_icon.keys():
             action_icon[icon].flow = action_icon[icon].flow-1 if action_icon[icon].flow < prev_flow \
                  and icon_id != icon and icon < 0 else action_icon[icon].flow
 
-            ##_______________________________ Validations-Rules-Boundary Games "Grammar"
+##_______________________________ Validations-Rules-Boundary Games "Grammar"
 ##__________________________________________________________________________
 
 
