@@ -626,6 +626,11 @@ class CodingCanvas(tk.Canvas):
                     action_icon[icon].flow = action_icon[icon].flow \
                         if action_icon[icon].flow <= action_icon[self.icon_to_edit].flow or \
                            action_icon[icon].flow == UNCONNECTED else action_icon[icon].flow-1
+            else:
+                for icon in action_icon:
+                    action_icon[icon].flow = action_icon[icon].flow \
+                        if action_icon[icon].flow > action_icon[self.icon_to_edit].flow \
+                        else action_icon[icon].flow+1
             del action_icon[self.icon_to_edit]
             self.delete(self.icon_to_edit)
         else:
@@ -757,9 +762,24 @@ class CodingCanvas(tk.Canvas):
     def change_icon(self, new_action):
         if not (error := self.error_change(self.icon_to_edit, new_action)):
             self.itemconfigure(self.icon_to_edit, image=self.ICONS[new_action])
-            action_icon[self.icon_to_edit].action = new_action
+            parents = action_icon[self.icon_to_edit].icon_parents()
+            if action_icon[self.icon_to_edit].action == SETTING:
+                old_flow = action_icon[self.icon_to_edit].flow
+                action_icon[self.icon_to_edit].action = new_action
+                if parents: # because is ok the change there will be only one parent
+                    self.actualize_flow(parents[0])
+                    # now renumber Settings....
+                for icon in action_icon:
+                    action_icon[icon].flow = action_icon[icon].flow -1\
+                        if old_flow < action_icon[icon].flow else action_icon[icon].flow
+            else:
+                pass
         else:
             self.error_message(error)
+
+
+
+
 
     def menu_change(self, event):
         x = self.canvasx(event.x)
@@ -793,7 +813,7 @@ class CodingCanvas(tk.Canvas):
             else:
                 prev_flow = self.get_previous_nonSetting(item)
                 action_icon[item].flow = prev_flow - 1
-                self.renumbering_non_settings(item, prev_flow)
+                self.renumbering_non_settings(item)
         else:
             self.error_message(error)
 
@@ -984,12 +1004,13 @@ class CodingCanvas(tk.Canvas):
         del link[self.link_to_edit]
         self.delete(self.link_to_edit)
 
-        # bit to correct....the idea is to cjeck if there are more line lines to keep it connected.
+        # bit to correct....the idea is to check if there are more line lines to keep it connected.
         if action_icon[icon2].action != SETTING:
             # action_icon[icon2].flow = UNCONNECTED
             # action_icon[icon2].orphan = True
             action_icon[icon2].flow = self.get_previous_nonSetting(icon2) - 1
             action_icon[icon2].orphan = True
+            self.renumbering_non_settings(icon2)
         else:
             unconnected_links = action_icon[icon2].unconnected_predecessors()
             if not unconnected_links and action_icon[icon2].flow_parents():
@@ -1064,17 +1085,12 @@ class CodingCanvas(tk.Canvas):
             row -= 1
         return 0
 
-    def renumbering_non_settings(self, icon_id, prev_flow):
+    def renumbering_non_settings(self, icon_id):
         for icon in action_icon.keys():
             action_icon[icon].flow = action_icon[icon].flow-1 if \
                 action_icon[icon].flow <= action_icon[icon_id].flow \
                 and action_icon[icon].row > action_icon[icon_id].row else action_icon[icon].flow
 
-
-    def renumbering_non_settingsOld(self, icon_id, prev_flow):
-        for icon in action_icon.keys():
-            action_icon[icon].flow = action_icon[icon].flow-1 if action_icon[icon].flow < prev_flow \
-                 and icon_id != icon and icon < 0 else action_icon[icon].flow
 
 ##_______________________________ Validations-Rules-Boundary Games "Grammar"
 ##__________________________________________________________________________
