@@ -791,7 +791,7 @@ class CodingCanvas(tk.Canvas):
                 else:
                     # so here new_action is a Setting old_action a non_setting
                     previous_setting = self.get_previous_setting(self.icon_to_edit)
-                    if previous_setting == None:
+                    if previous_setting is None:
                         action_icon[self.icon_to_edit].flow = previous_setting = 0
                     else:
                         action_icon[self.icon_to_edit].flow = previous_setting + 1
