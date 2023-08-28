@@ -790,11 +790,60 @@ class CodingCanvas(tk.Canvas):
                             if old_flow < action_icon[icon].flow else action_icon[icon].flow
                 else:
                     # so here new_action is a Setting old_action a non_setting
+                    self.numbering_new_setting(self.icon_to_edit)
+                    if parents:
+                        self.actualize_flow(self.icon_to_edit)
+                    else:
+                        #new action is an isolated SETTING so a non_setting less
+                        # +1 to non settings
+                        prev_nonsetting = self.get_previous_nonSetting(self.icon_to_edit)
+                        for icon in action_icon.keys():
+                            action_icon[icon].flow = action_icon[icon].flow \
+                                if action_icon[icon].flow >= prev_nonsetting or \
+                                   icon == self.icon_to_edit else action_icon[icon].flow + 1
+            else:
+                #This is the part where we do nothing, because here the cases are from a
+                # non_setting to non_setting basically we do not need to do much  (so two cases less)
+                pass
+        else:
+            self.error_message(error)
+
+    def change_iconOld(self, new_action):
+        if not (error := self.error_change(self.icon_to_edit, new_action)):
+            self.itemconfigure(self.icon_to_edit, image=self.ICONS[new_action])
+            old_action = action_icon[self.icon_to_edit].action
+            action_icon[self.icon_to_edit].action = new_action
+
+            parents = action_icon[self.icon_to_edit].icon_parents()
+            old_flow = action_icon[self.icon_to_edit].flow
+            # if both cases are a non_setting, no renumbering is needed.
+            if new_action == SETTING or old_action == SETTING:
+                # Changing a Setting for a non-setting
+                if old_action == SETTING: # icon was originally SETTING
+                    # because is ok the change there will be only one parent. We need to take the parent of
+                    # this node and extend the color and attributes to the icons below
+                    if parents:
+                        self.actualize_flow(parents[0])
+                    else:
+                    # new action is an isolated non_setting, so renumber non settings (a new one)
+                        prev_nonsetting = self.get_previous_nonSetting(self.icon_to_edit)
+                        action_icon[self.icon_to_edit].flow = prev_nonsetting - 1
+                        for icon in action_icon.keys():
+                            action_icon[icon].flow = action_icon[icon].flow \
+                                if action_icon[icon].flow > action_icon[self.icon_to_edit].flow or \
+                            icon == self.icon_to_edit else action_icon[icon].flow -1
+
+                    # now renumber Settings, we have one SETTING less so add -1
+                    for icon in action_icon:
+                        action_icon[icon].flow = action_icon[icon].flow -1\
+                            if old_flow < action_icon[icon].flow else action_icon[icon].flow
+                else:
+                    # so here new_action is a Setting old_action a non_setting
                     previous_setting = self.get_previous_setting(self.icon_to_edit)
                     if previous_setting is None:
                         action_icon[self.icon_to_edit].flow = previous_setting = 0
                     else:
-                        action_icon[self.icon_to_edit].flow = previous_setting + 1
+                        action_icon[self.icon_to_edit].flow = action_icon[previous_setting].flow + 1
                     if parents:
                         self.actualize_flow(self.icon_to_edit)
                     else:
@@ -810,7 +859,8 @@ class CodingCanvas(tk.Canvas):
 
                     for icon in action_icon.keys():
                         action_icon[icon].flow = action_icon[icon].flow + 1 \
-                            if previous_setting <= action_icon[icon].flow and icon != self.icon_to_edit \
+                            if action_icon[self.icon_to_edit].flow <= action_icon[icon].flow\
+                               and icon != self.icon_to_edit \
                             else action_icon[icon].flow
 
             else:
@@ -819,7 +869,6 @@ class CodingCanvas(tk.Canvas):
                 # non_setting to non_setting basically we do not need to do much  (so two cases less)
         else:
             self.error_message(error)
-
 
 
 
@@ -1086,6 +1135,7 @@ class CodingCanvas(tk.Canvas):
                 return icon
         return 0
 
+# returns the IconID number on the canvas of the previous_setting
     def get_previous_setting(self, iconID):
         row = action_icon[iconID].row - 1
         # going back to look for a previous Settings
@@ -1114,36 +1164,7 @@ class CodingCanvas(tk.Canvas):
             else:
                 action_icon[icon].flow = action_icon[icon].flow + 1
 
-    def numbering_new_settingOLd(self, iconID):
-        # First it will assign a new number to the Setting
-        # then it will fix numeration for all the other Settings
-        row = action_icon[iconID].row - 1
-        setting_found = False
-        # going back to look for a previous Settings
-        while row >= 0:
-            l_icons = self.icons_in_row(row)
-            if previous_setting := self.setting_in_row(row):
-                setting_found = True
-                break
-            row -= 1
-        if setting_found:
-            action_icon[iconID].flow = action_icon[previous_setting].flow + 1 # numbering the setting
-            action_icon[iconID].graph_x = (action_icon[previous_setting].graph_x + 10) % 1200 # for the graph view
-        else:
-            action_icon[iconID].flow = 0
-            action_icon[iconID].graph_x = 20  # initial place for icon in graph view...better a constant?
-            # go to the whole list of icons renumbering the settings
-        for icon in action_icon.keys():
-            if action_icon[icon].action == SETTING and action_icon[icon].row == 0:
-                action_icon[icon].orphan = False
-            if (action_icon[icon].flow < action_icon[iconID].flow) or (icon == iconID):
-                action_icon[icon].flow = action_icon[icon].flow
-            else:
-                action_icon[icon].flow = action_icon[icon].flow + 1
-
-
-
-# returns the flow number of the previous nonSetting
+ # returns the flow number of the previous nonSetting
     def get_previous_nonSetting(self, icon_id):
         row = action_icon[icon_id].row
         while row >= 0:
