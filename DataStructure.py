@@ -48,6 +48,7 @@ error_message[302] = "Error 302 Moving a Setting, Following or Enhancing to row 
 error_message[305] = "Error 305 Move produces an Setting not connected to the last immediate action of a parent flow"
 error_message[306] = "Error 306 Moving the icon disrupts previously established sequence. Delete links before moving"
 error_message[307] = "Error 307 Moving a Setting out of enclosing Settings"
+error_message[308] = "Error 308 Moving a Non Setting out of enclosing Non Settings"
 
 error_message[401] = "Error 401 Before erasing the icon, erase the links to it"
 
@@ -136,6 +137,7 @@ class action :
         return [lnk for lnk in self.links if action_icon[link[lnk][1]] == self and
                 action_icon[link[lnk][0]].flow == UNCONNECTED]
 
+    # returns a lnk number that connects this icon to the one up in the flow specified by parameter flow
     def flowup_tolink(self, flow):
         for lnk in self.links:
             if action_icon[link[lnk][0]] != self and action_icon[link[lnk][0]].flow == flow :
@@ -289,6 +291,26 @@ class action :
                     later = icon
                     d_later = d
         return past, later
+
+    def enclosing_nonsettings(self):
+        d_past = self.row + 1
+        d_later = len(coding_sheet) + 1
+        past = 0
+        later = 0
+        for icon in action_icon:
+            if action_icon[icon].action != SETTING and action_icon[icon].row < self.row:
+                d = self.row - action_icon[icon].row
+                if d < d_past:
+                    past = icon
+                    d_past = d
+            if action_icon[icon].action != SETTING and action_icon[icon].row > self.row:
+                d = self.row - action_icon[icon].row
+                if d < d_later:
+                    later = icon
+                    d_later = d
+        return past, later
+
+
 
     # takes the current (IconID) flow number, and disseminate the number with a color an an orphan state
     # also it reurns the links connecting the icons implied, also with the terminations of those connection where

@@ -516,13 +516,13 @@ class CodingCanvas(tk.Canvas):
         lnk = self.find_withtag(tk.CURRENT)[0]
         icon1 = link[lnk][0]
         icon2 = link[lnk][1]
-        label = "flow  : " + str(action_icon[icon1].flow) + "\n" + \
-                ICON_NAME[action_icon[icon1].action] + " : " + action_icon[icon1].note + "\n" + \
-                "row   : " + str(action_icon[icon1].row) + "\n" + \
-                "»»»»»»»»»»»»»»»»" + "\n" + \
-                "flow  : " + str(action_icon[icon2].flow) + "\n" + \
-                ICON_NAME[action_icon[icon2].action] + " :  " + action_icon[icon2].note + "\n" + \
-                "row   : " + str(action_icon[icon2].row)
+        icon_parent = action_icon[icon1].first_inflow()
+        if icon_parent == 0:
+            icon_parent = icon1
+        flow_name = action_icon[icon_parent].note[:15] if action_icon[icon_parent].note else "--------------"
+        label = "Flow " + str(action_icon[icon1].flow) + "  ::  " + flow_name + "\n" + \
+                "From row  " + str(action_icon[icon1].row) + "  to  " + str(action_icon[icon2].row) + "\n" + \
+                ICON_NAME[action_icon[icon1].action] + " to " + ICON_NAME[action_icon[icon2].action]
 
         text = self.create_text(x, y, justify=tk.LEFT, width=250, text=label, tags="info_window", anchor=tk.N)
         x1, y1, x2, y2 = self.bbox(text)
@@ -540,10 +540,10 @@ class CodingCanvas(tk.Canvas):
         y = self.canvasy(event.y)
         icon = self.find_withtag(tk.CURRENT)[0]
         # location = self.bbox(icon)
-        label = ICON_NAME[action_icon[icon].action] + "»»»»»»»»" + "\n" + \
-                "flow  : " + str(action_icon[icon].flow) + "\n" + \
-                "note  : " + (action_icon[icon].note) + "\n" + \
-                "\n"
+        icon_note = action_icon[icon].note if action_icon[icon].note else "No comment"
+        label = ICON_NAME[action_icon[icon].action] + "\n" + \
+                "»» " + icon_note + "\n" + \
+                "»» Belongs to flow " + str(action_icon[icon].flow)
                 # "row   : " + str(action_icon[icon].row) + \
                 # "IconID: " + str(icon)
         # "Orphan: " + str(action_icon[icon].orphan) + "\n" +   \
@@ -975,6 +975,8 @@ class CodingCanvas(tk.Canvas):
             self.redraw_iconlinks(icon)
 
     def error_move(self, icon_ID, to_row):
+        if action_icon[icon_ID].row == to_row:
+            return 0
         # error 301 no more than one Setting per row
         if action_icon[icon_ID].action == SETTING:
             count = 0
@@ -1026,6 +1028,16 @@ class CodingCanvas(tk.Canvas):
                 if to_row > action_icon[later].row:
                     return 307
 
+        # Error 308 Moving a Non Setting out of enclosing Non Settings
+        # perhaps I also have to chech no links above and below?
+        if action_icon[icon_ID].action != SETTING and not(action_icon[icon_ID].previous_list()):
+            past, later = action_icon[icon_ID].enclosing_nonsettings()
+            if past:
+                if action_icon[past].row > to_row:
+                    return 308
+            if later:
+                if to_row > action_icon[later].row:
+                    return 308
         return 0
 
     def icon_restplace(self, event):
@@ -1053,11 +1065,13 @@ class CodingCanvas(tk.Canvas):
                 if action_icon[icon_id].action == SETTING and icon_row == 0:
                     action_icon[icon_id].orphan = False
                     self.actualize_flow(icon_id)
-# special case Setting when moved it loses Prime status
 
+# special case Setting when moved it loses Prime status
                 if action_icon[icon_id].action == SETTING and icon_oldrow == 0 and icon_row > 0:
                     action_icon[icon_id].orphan = True
                     self.actualize_flow(icon_id)
+
+        # put here the code for re-numbering non_settings
 
         if error_move:
             rx1, ry1, rx2, ry2 = self.bbox(coding_sheet[action_icon[icon_id].row][ACTIONS_COLUMN])
