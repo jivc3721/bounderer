@@ -1072,6 +1072,30 @@ class CodingCanvas(tk.Canvas):
                     self.actualize_flow(icon_id)
 
         # put here the code for re-numbering non_settings
+                if action_icon[icon_id].action != SETTING and icon_row != icon_oldrow:  # you actually change row
+                    icons_origen = self.icons_in_row(icon_oldrow)
+                    #take out settings and icons with parents!!!
+
+                    # below we have to swap max and min? I am thinking in positive numebr when comparing?
+
+                    if icons_origen:  # that means the icon had company in origen row
+                        if icon_row < icon_oldrow:  # we went up
+                            pivot_flow = max(action_icon[i].flow for i in icons_origen)
+                            up = True
+                        else:  # we went down
+                            pivot_flow = min(action_icon[i].flow for i in icons_origen)
+                            up = False
+                        pivot_icon = [i for i in icons_origen if action_icon[i].flow == pivot_flow][0]
+                        if (up and pivot_flow > action_icon[icon_id].flow) or \
+                            (not up and pivot_flow < action_icon[icon_id].flow):
+                            action_icon[icon_id].flow, action_icon[pivot_icon].flow = \
+                            action_icon[pivot_icon].flow, action_icon[icon_id].flow
+                            self.actualize_flow(icon_id)
+                            self.actualize_flow(pivot_icon)
+
+
+        # action_icon[icon_id].flow = self.get_previous_nonSetting(icon_id) - 1
+        # self.renumbering_non_settings(icon_id)
 
         if error_move:
             rx1, ry1, rx2, ry2 = self.bbox(coding_sheet[action_icon[icon_id].row][ACTIONS_COLUMN])
@@ -1945,6 +1969,8 @@ def field_value(field):
     return c.itemcget(field, "text")
 
 def write_excel_header(sheet):
+    # "k" stands for this is part of the key that identifies this combination as a unique record
+    # "k_row+k_icon+k_delta_x : provide a unique key to access this particular record
     sheet.write(0, 1, "k_row")
     sheet.write(0, 2, "k_icon")
     sheet.write(0, 3, "k_delta_x")

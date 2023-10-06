@@ -298,12 +298,14 @@ class action :
         past = 0
         later = 0
         for icon in action_icon:
-            if action_icon[icon].action != SETTING and action_icon[icon].row < self.row:
+            if action_icon[icon].action != SETTING and action_icon[icon].row < self.row and \
+                not action_icon[icon].previous_list():
                 d = self.row - action_icon[icon].row
                 if d < d_past:
                     past = icon
                     d_past = d
-            if action_icon[icon].action != SETTING and action_icon[icon].row > self.row:
+            if action_icon[icon].action != SETTING and action_icon[icon].row > self.row and \
+                not action_icon[icon].previous_list():
                 d = self.row - action_icon[icon].row
                 if d < d_later:
                     later = icon
