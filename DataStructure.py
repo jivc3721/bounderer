@@ -73,12 +73,12 @@ link = {}
 class excel_field :
  # This initialization takes the values referenced by coding_sheet but some values in relation to icons are left empty
     def __init__(self):
-        # def __init__(self, k_row=0, k_icon=0, k_delta_x=0, flow=0, time="", actor="", transcription="", comment=""):
+        # def __init__(self, k_row=0, k_icon=0, k_parent=0, flow=0, time="", actor="", transcription="", comment=""):
 
         self.k_row = 0
-        self.k_icon = NO_ICON
-        self.k_delta_x = NO_ICON
-        self.k_flow = UNCONNECTED
+        self.k_icon = None
+        self.k_flow = None
+        self.k_parent = None
         self.time = ""
         self.actor = ""
         self.transcription = ""
@@ -88,7 +88,7 @@ class excel_field :
 #    Icon comment????????
 
 class action :
-    def __init__(self, row=0, flow=UNCONNECTED, action=0, delta_x=0, links=(),
+    def __init__(self, row=0, flow=None, action=0, delta_x=0, links=(),
                  note="", graph_x=0, flow_color=0, orphan=True):
         self.row = row
         self.flow = flow
@@ -135,7 +135,7 @@ class action :
         # the predecesor [lnk][0] is unconnected and is connected to the current, but becasue the predecessor
         # is unconnected this also is unconnected.
         return [lnk for lnk in self.links if action_icon[link[lnk][1]] == self and
-                action_icon[link[lnk][0]].flow == UNCONNECTED]
+                action_icon[link[lnk][0]].flow < 0]
 
     # returns a lnk number that connects this icon to the one up in the flow specified by parameter flow
     def flowup_tolink(self, flow):

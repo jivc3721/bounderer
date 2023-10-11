@@ -623,9 +623,13 @@ class CodingCanvas(tk.Canvas):
         if not action_icon[self.icon_to_edit].links:
             if action_icon[self.icon_to_edit].action == SETTING:
                 for icon in action_icon:
+                    # action_icon[icon].flow = action_icon[icon].flow \
+                    #     if action_icon[icon].flow <= action_icon[self.icon_to_edit].flow or \
+                    #        action_icon[icon].flow == UNCONNECTED else action_icon[icon].flow-1
                     action_icon[icon].flow = action_icon[icon].flow \
-                        if action_icon[icon].flow <= action_icon[self.icon_to_edit].flow or \
-                           action_icon[icon].flow == UNCONNECTED else action_icon[icon].flow-1
+                        if action_icon[icon].flow <= action_icon[self.icon_to_edit].flow  \
+                        else action_icon[icon].flow-1
+
             else:
                 for icon in action_icon:
                     action_icon[icon].flow = action_icon[icon].flow \
@@ -898,7 +902,8 @@ class CodingCanvas(tk.Canvas):
             delta_y = (ry2-ry1-25)/2  # for centring the icon on y axis
             item = self.create_image(self.click_x, ry1 + delta_y, anchor=tk.NW, image=self.ICONS[type_icon],
                                      tags="icon", disabledimage=self.ICONS[type_icon+6])
-            action_icon[item] = action(row=self.icon_row, flow=UNCONNECTED,
+            #in the following line flow=-1, is just temporal, next lines will decide the real flow number
+            action_icon[item] = action(row=self.icon_row, flow=-1,
                                    action=type_icon, delta_x=self.click_x)
             if type_icon == SETTING:
                 self.numbering_new_setting(item)
@@ -1136,8 +1141,6 @@ class CodingCanvas(tk.Canvas):
 
         # bit to correct....the idea is to check if there are more line lines to keep it connected.
         if action_icon[icon2].action != SETTING:
-            # action_icon[icon2].flow = UNCONNECTED
-            # action_icon[icon2].orphan = True
             action_icon[icon2].flow = self.get_previous_nonSetting(icon2) - 1
             action_icon[icon2].orphan = True
             self.renumbering_non_settings(icon2)
@@ -1968,43 +1971,55 @@ def bring_graph_view():
 def field_value(field):
     return c.itemcget(field, "text")
 
+# write the first row in the excel file naming the columns
 def write_excel_header(sheet):
     # "k" stands for this is part of the key that identifies this combination as a unique record
     # "k_row+k_icon+k_delta_x : provide a unique key to access this particular record
-    sheet.write(0, 1, "k_row")
-    sheet.write(0, 2, "k_icon")
-    sheet.write(0, 3, "k_delta_x")
-    sheet.write(0, 4, "flow")
-    sheet.write(0, 5, "icon_note")
-    sheet.write(0, 6, "time")
-    sheet.write(0, 7, "actor")
-    sheet.write(0, 8, "transcription")
-    sheet.write(0, 9, "comment")
+    sheet.write(1, 1, "k_row")
+    sheet.write(1, 2, "k_icon")
+    sheet.write(1, 4, "flow")
+    sheet.write(1, 3, "parent")
+    sheet.write(1, 5, "icon_note")
+    sheet.write(1, 6, "time")
+    sheet.write(1, 7, "actor")
+    sheet.write(1, 8, "transcription")
+    sheet.write(1, 9, "comment")
 
-
+# it receives a row number and put the common data (to all the icons) in a record that will be saved in excel
 def load_row_on_field(row, excelfield):
     excelfield.k_row = int(c.itemcget(coding_sheet[row][MOVE_COLUMN], 'text'))
+    excelfield.k_icon = None
+    excelfield.k_flow = None
+    excelfield.k_parent = None
     excelfield.time = c.itemcget(coding_sheet[row][TIME_COLUMN], 'text')
     excelfield.actor = c.itemcget(coding_sheet[row][ACTOR_COLUMN], 'text')
     excelfield.transcription = c.itemcget(coding_sheet[row][COMMUNICATION_COLUMN], 'text')
     excelfield.comment = c.itemcget(coding_sheet[row][NOTES_COLUMN], 'text')
-    excelfield.k_icon = NO_ICON
-    excelfield.k_delta_x = NO_ICON
-    excelfield.k_flow = UNCONNECTED
     excelfield.icon_note = ""
 
-
+# put in the excel fiel sheet (file) in the excelrow the contents of the record in excelfield
 def row_to_excel(sheet, excelrow, excel_field):
     sheet.write(excelrow, 1, excel_field.k_row)
     sheet.write(excelrow, 2, excel_field.k_icon)
-    sheet.write(excelrow, 3, excel_field.k_delta_x)
-    sheet.write(excelrow, 4, excel_field.flow)
+    sheet.write(excelrow, 4, excel_field.k_flow)
+    sheet.write(excelrow, 3, excel_field.k_parent)
     sheet.write(excelrow, 5, excel_field.icon_note)
     sheet.write(excelrow, 6, excel_field.time)
     sheet.write(excelrow, 7, excel_field.actor)
     sheet.write(excelrow, 8, excel_field.transcription)
     sheet.write(excelrow, 9, excel_field.comment)
 
+# the important columns of the table the ones that compose the key that identifies the row as unique
+# k_row: the number of the row goes from 0 to len of coding_sheet. There is aleast one row
+#       It is constant for all the icons on that row
+# k_icon : is a number (0-5) that corresponds to the action on the boundary (SETTING,FOLLOWING, etc
+#          if there is no icon the value will be None (it will look empty on excel). This k_icon is constant for
+#           all the links that belong to the icon
+# k_flow : is a number >=0 refers to a SETTING at the beginning of the flow.
+#           <0 refers to a flow not connected to a SETTING. The number just as k_icon is constant to all the links
+#           that belongs to the icon. (the beginning of the flow can be this very same icon). If there is not
+#           icon the k_flow is also None
+# k_parent: is a number that shows to which flow upwards is this icon connected. if no icon the value is None
 def export_excel():
     filename = filedialog.asksaveasfilename(title="Export Coding to Excel", defaultextension=".xlsx",
                                             filetypes=(("Excel files", "*.xlsx"), ("all files", "*.*")))
@@ -2013,22 +2028,22 @@ def export_excel():
         sheet = book.add_worksheet()
         write_excel_header(sheet)
 
-        excelrow = 1
-        old_excel = excel_field()
+        excelrow = 2
+        old_time = ""
+        old_actor = ""
         new_excel = excel_field()
         for row in coding_sheet:
             load_row_on_field(int(field_value(row[MOVE_COLUMN])), new_excel)
-            new_excel.time = old_excel.time if new_excel.time == "" else new_excel.time
-            new_excel.actor = old_excel.actor if new_excel.actor == "" else new_excel.actor
+            new_excel.time = old_time if new_excel.time == "" else new_excel.time
+            new_excel.actor = old_actor if new_excel.actor == "" else new_excel.actor
             icons = c.icons_in_row(int(field_value(row[MOVE_COLUMN])))
             for icon in icons:
                 new_excel.k_icon = action_icon[icon].action
-                new_excel.k_delta_x = action_icon[icon].delta_x
-                new_excel.flow = action_icon[icon].flow
+                new_excel.k_flow = action_icon[icon].flow
                 new_excel.icon_note = action_icon[icon].note
                 flows = action_icon[icon].flow_parents()
                 for link in flows:
-                    new_excel.flow = link
+                    new_excel.k_parent = link
                     row_to_excel(sheet, excelrow, new_excel)
                     excelrow += 1
                 if not flows:
@@ -2036,12 +2051,13 @@ def export_excel():
                     row_to_excel(sheet, excelrow, new_excel)
                     excelrow += 1
             if not icons:
-                new_excel.k_icon = NO_ICON
-                new_excel.flow = UNCONNECTED
-                new_excel.k_delta_x = NO_ICON
+                new_excel.k_icon = None
+                new_excel.flow = None
+                new_excel.k_delta_x = None
                 row_to_excel(sheet, excelrow, new_excel)
                 excelrow+=1
-            old_excel = new_excel
+            old_time = new_excel.time
+            old_actor = new_excel.actor
         book.close()
 
 def export_graph():
