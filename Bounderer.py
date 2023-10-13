@@ -1797,19 +1797,32 @@ def print_coding():
 def nothing_to_do():
     pass
 
+def new_file():
+    global codingfile
+
+    save_coding_as()
+
+    reset_coding_ground()
+
+    c.new_row(0)
+    current_column = TIME_COLUMN
+    c.focus_set()  # move focus to canvas
+    c.focus(coding_sheet[current_row][current_column])  # set focus to text item
+    c.index(coding_sheet[current_row][current_column], tk.END)
+    c.highlight(coding_sheet[current_row][current_column])
+
+    codingfile=""
+    root.title("Bounderer Vr. Alfa ::: ")
+
+
 def import_file():
     global current_row, current_column, coding_sheet
 
     filename = filedialog.askopenfilename(title="Import Word Table File", defaultextension=".docx",
                                           filetypes=(("Word file", "*.docx"), ("all files", "*.*")))
     if filename:
-        coding_sheet = []  # this and the following erase the previous information
-        c.addtag_all("erase")
-        c.delete("erase")
-        c.baseline = c.create_line(0, -10, 10, -10)
-        action_icon.clear()
-        link.clear()
-        current_row, current_column = 0, 0
+        reset_coding_ground()
+
         row_content = ["", "", "", "", "", ""]
 
         document = Document(filename)
@@ -1832,19 +1845,34 @@ def import_file():
         c.index(coding_sheet[current_row][current_column], tk.END)
         c.highlight(coding_sheet[current_row][current_column])
 
+def reset_coding_ground():
+    global current_row, current_column, coding_sheet
+
+    # erase things
+    coding_sheet.clear()
+    c.addtag_all("erase")
+    c.delete("erase")
+    action_icon.clear()
+    link.clear()
+
+    # Variables to reset
+    current_row, current_column = 0, 0
+
+    # variables for linking icons (perhaps they were left activited)
+    c.first_icon = 0
+    c.ready_forlink = False
+
+    c.baseline = c.create_line(0, -10, 10, -10)
+
+# This can be apllied in two cases....
+
 
 def open_file():
     global current_row, current_column, coding_sheet, codingfile
     filename = filedialog.askopenfilename(title="Open Coding", defaultextension=".bg",
                                           filetypes=(("boundary games coding", "*.bg"), ("all files", "*.*")))
     if filename:
-        coding_sheet = []  # this and the following erase the previous information
-        c.addtag_all("erase")
-        c.delete("erase")
-        c.baseline = c.create_line(0, -10, 10, -10)
-        action_icon.clear()
-        link.clear()
-        current_row, current_column = 0, 0
+        reset_coding_ground()
         row_content = []
         f = open(filename, mode="r")
         text = ""
@@ -1907,11 +1935,9 @@ def open_file():
         c.index(coding_sheet[current_row][current_column], tk.END)
         c.highlight(coding_sheet[current_row][current_column])
 
-def save_file():
+def save_coding():
     global codingfile
-    codingfile = filedialog.asksaveasfilename(title="Save Coding As", defaultextension=".bg",
-                                            initialfile=codingfile,
-                                            filetypes=(("boundary games coding", "*.bg"), ("all files", "*.*")))
+
     if codingfile:
         f = open(codingfile, mode="w")
         for row in coding_sheet:
@@ -1946,6 +1972,12 @@ def save_file():
         f.close()
         root.title("Bounderer Vr. Alfa ::: " + codingfile)
 
+def save_coding_as():
+    global codingfile
+    codingfile = filedialog.asksaveasfilename(title="Save Coding As", defaultextension=".bg",
+                                            initialfile=codingfile,
+                                            filetypes=(("boundary games coding", "*.bg"), ("all files", "*.*")))
+    save_coding()
 
 def mytrace():
     print("my trace:")
@@ -2019,7 +2051,7 @@ def row_to_excel(sheet, excelrow, excel_field):
 #           <0 refers to a flow not connected to a SETTING. The number just as k_icon is constant to all the links
 #           that belongs to the icon. (the beginning of the flow can be this very same icon). If there is not
 #           icon the k_flow is also None
-# k_parent: is a number that shows to which flow upwards is this icon connected. if no icon the value is None
+# k_parent: is a number that shows to which flow upwards is this icon connected. if no icon above the value is None
 def export_excel():
     filename = filedialog.asksaveasfilename(title="Export Coding to Excel", defaultextension=".xlsx",
                                             filetypes=(("Excel files", "*.xlsx"), ("all files", "*.*")))
@@ -2048,6 +2080,7 @@ def export_excel():
                     excelrow += 1
                 if not flows:
                     # no links in the icon # extract the flow from the flow in which the icon is
+                    new_excel.k_parent = None
                     row_to_excel(sheet, excelrow, new_excel)
                     excelrow += 1
             if not icons:
@@ -2064,6 +2097,19 @@ def export_graph():
     filename = filedialog.asksaveasfilename(title="Export Structure Tree to GraphML", defaultextension=".GRAPHML",
                                             filetypes=(("GraphML type", "*.GRAPHML"), ("all files", "*.*")))
     if filename:
+        # basically at the beggining we erase all the data of the tree (perhaps we are not there perhaps yes, we do
+        # not know, so better erase all. Calcualte all, pait the whole tree and move to this view to let people know
+        # wgat there were saving
+        tc.addtag_all("erase")
+        tc.delete("erase")
+        tc.leafs.clear()
+        tc.t_matrix.clear()
+
+        tc.load_data()
+        tc.paint()
+        graph_view.lift()
+
+        tc.load_data()
         f = open(filename, mode="w")
         f.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
         f.write("<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\"\n")
@@ -2087,7 +2133,7 @@ def export_graph():
 
 def on_closing():
     if tk.messagebox.askokcancel("Quit", "Do you want to save the file before quitting?"):
-        save_file()
+        save_coding_as()
         root.destroy()
     else:
         root.destroy()
@@ -2147,9 +2193,10 @@ menuExport = tk.Menu(menuFile, tearoff=0)
 menuExport.add_command(label="PDF", command=print_coding)
 menuExport.add_command(label="Excel", command=export_excel)
 
-menuFile.add_command(label="New", command=nothing_to_do)
+menuFile.add_command(label="New", command=new_file)
 menuFile.add_command(label="Open", command=open_file)
-menuFile.add_command(label="Save As...", command=save_file)
+menuFile.add_command(label="Save", command=save_coding)
+menuFile.add_command(label="Save As...", command=save_coding_as)
 menuFile.add_command(label="Import", command=import_file)
 menuFile.add_cascade(label="Export coding", menu=menuExport)
 menuFile.add_command(label="Export Tree", command=export_graph)
