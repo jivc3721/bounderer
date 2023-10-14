@@ -249,6 +249,7 @@ class CodingCanvas(tk.Canvas):
 
         self.bind("<Key>", self.handle_key)
         self.bind("<Shift-KeyPress-Tab>", self.shift_tab)
+        self.bind("<Shift-KeyPress-Return>", self.break_comment)
 
         self.tag_bind("icon", "<Shift-Button-1>", self.icon_to_move)
         self.tag_bind("icon", "<Shift-B1-Motion>", self.move_icon)
@@ -1332,6 +1333,7 @@ class CodingCanvas(tk.Canvas):
 ##########################################################            
     
     def handle_key(self, event):
+        global current_row, current_column
         # widget-wide key dispatcher
         item = self.has_focus()
         if not item:
@@ -1341,7 +1343,16 @@ class CodingCanvas(tk.Canvas):
         if event.keysym == "Return" and sheet_description[current_column]["enter_behaviour"] == "break_field":
             self.break_field(current_row)    
         if event.keysym == "Return" and sheet_description[current_column]["enter_behaviour"] == "new_row":
-            self.insert_row(current_row+1)
+            if current_row == len(coding_sheet) - 1: # we are at the last line, so create one
+                self.new_row(current_row + 1)
+                current_row += 1
+                current_column = TIME_COLUMN
+                self.focus_set()  # move focus to canvas
+                self.focus(coding_sheet[current_row][current_column])  # set focus to text item
+                self.index(coding_sheet[current_row][current_column], tk.END)
+                self.highlight(coding_sheet[current_row][current_column])
+            else: # this is not the last so insert one
+                self.insert_row(current_row + 1)
         elif event.char >= " " or (event.keysym == "Return" and
                                    sheet_description[current_column]["enter_behaviour"] == "in_field"):
             # printable character
@@ -1360,6 +1371,9 @@ class CodingCanvas(tk.Canvas):
                     self.dchars(item, insert-1, insert)
                 elif current_column == COMMUNICATION_COLUMN and current_row > 0 :
                     self.transcript_bs()
+                    item = self.has_focus()
+                elif current_column == NOTES_COLUMN and current_row > 0 :
+                    self.comment_bs()
                     item = self.has_focus()
             self.highlight(item)
 
@@ -1494,10 +1508,29 @@ class CodingCanvas(tk.Canvas):
             self.highlight(coding_sheet[current_row][COMMUNICATION_COLUMN])
 
             self.delete_row(current_row+1)
-
-
         else:
             self.error_message(601)
+
+    def comment_bs(self):
+        global current_row, current_column
+
+        item = self.has_focus()
+
+        text_to_move = self.itemcget(item, 'text')
+        textabove = self.itemcget(coding_sheet[current_row -1][current_column], 'text')
+        textabove = textabove + " " + text_to_move
+
+        current_row -= 1
+        self.itemconfigure(coding_sheet[current_row][current_column], text=textabove)
+        self.highlight(coding_sheet[current_row][current_column])
+
+        self.itemconfigure(item, text="")
+        self.highlight(coding_sheet[current_row+1][current_column])
+
+        self.focus_set()  # move focus to canvas
+        self.focus(coding_sheet[current_row][current_column])  # set focus to text item
+        self.index(coding_sheet[current_row][current_column], tk.END)
+        self.highlight(coding_sheet[current_row][current_column])
 
     def break_field(self, row):
         item = self.has_focus()
@@ -1519,6 +1552,35 @@ class CodingCanvas(tk.Canvas):
             self.focus(coding_sheet[current_row][current_column])  # set focus to text item
             self.index(coding_sheet[current_row][current_column], tk.END)
             self.highlight(coding_sheet[current_row][current_column])
+
+    def break_comment(self, event):
+        global current_row, current_column
+        if sheet_description[current_column]["enter_behaviour"] != "in_field" or current_row == len(coding_sheet) - 1:
+            return
+        item = self.has_focus()
+        if not item:
+            return
+
+        insert = self.index(item, tk.INSERT)
+
+        text = self.itemcget(item, 'text')
+        textabove = text[:insert]
+        textbelow1 = text[insert:]
+
+        textbelow2 = self.itemcget(coding_sheet[current_row + 1][current_column], 'text')
+        textbelow = textbelow1 + textbelow2
+
+
+        self.itemconfigure(item, text=textabove)
+        self.highlight(coding_sheet[current_row][current_column])
+        current_row += 1
+        self.itemconfigure(coding_sheet[current_row][current_column], text=textbelow)
+
+        self.focus_set()  # move focus to canvas
+        self.focus(coding_sheet[current_row][current_column])  # set focus to text item
+        self.index(coding_sheet[current_row][current_column], tk.END)
+        self.highlight(coding_sheet[current_row][current_column])
+
 
     def insert_row(self, row, contents=[]):
         global current_row, current_column
