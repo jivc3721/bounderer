@@ -251,6 +251,11 @@ class CodingCanvas(tk.Canvas):
         self.bind("<Shift-KeyPress-Tab>", self.shift_tab)
         self.bind("<Shift-KeyPress-Return>", self.break_comment)
 
+        self.bind("<Control-c>", self.copy_cell)
+        self.bind("<Control-C>", self.copy_cell)
+        self.bind("<Control-v>", self.paste_cell)
+        self.bind("<Control-V>", self.paste_cell)
+
         self.tag_bind("icon", "<Shift-Button-1>", self.icon_to_move)
         self.tag_bind("icon", "<Shift-B1-Motion>", self.move_icon)
         self.tag_bind("icon", "<Shift-B1-ButtonRelease>", self.icon_restplace)
@@ -1406,6 +1411,38 @@ class CodingCanvas(tk.Canvas):
             return
         self.prev_cell()
         self.yview(tk.SCROLL, self.move_to_visibility(item), tk.UNITS)
+
+    def copy_cell(self, event):
+        global current_row, current_column
+        item = self.has_focus()
+        if not item:
+            return
+        if sheet_description[current_column]["type_of_field"] == "editable":
+            text = self.itemcget(coding_sheet[current_row][current_column], 'text')
+            root.clipboard_clear()
+            root.clipboard_append(text)
+
+    def paste_cell(self, event):
+        item = self.has_focus()
+        if not item:
+            return
+        insert = self.index(item, tk.INSERT)
+
+        cell_text = self.itemcget(item, 'text')
+        middle_text = root.clipboard_get()
+
+        start_text = cell_text[:insert]
+        end_text = cell_text[insert:]
+
+        cell_text = start_text + middle_text + end_text
+        self.itemconfigure(item, text=cell_text)
+
+        self.highlight(coding_sheet[current_row][current_column])
+
+        self.focus_set()  # move focus to canvas
+        self.focus(coding_sheet[current_row][current_column])  # set focus to text item
+        self.index(coding_sheet[current_row][current_column], tk.END)
+        self.highlight(coding_sheet[current_row][current_column])
 
     def prev_cell(self):
         global current_row, current_column
