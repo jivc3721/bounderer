@@ -260,6 +260,8 @@ class CodingCanvas(tk.Canvas):
         self.tag_bind("icon", "<Shift-B1-Motion>", self.move_icon)
         self.tag_bind("icon", "<Shift-B1-ButtonRelease>", self.icon_restplace)
 
+        self.bind("<MouseWheel>", self.scroll_canvas)
+
     def has_focus(self):
         return self.focus()
 
@@ -308,6 +310,16 @@ class CodingCanvas(tk.Canvas):
         while coding_sheet[row][column] != f:
             column += 1
         return column, row
+
+    def scroll_canvas(self, event):
+        # Get the delta value of the mouse wheel
+        delta = event.delta
+
+        # Scroll the canvas up or down depending on the delta value
+        if delta > 0:
+            self.yview_scroll(-1, "units")
+        elif delta < 0:
+            self.yview_scroll(1, "units")
 
     def move_to_visibility(self, item):
         # returns 0 if you are visible. 1 if your are after the end of the window
@@ -1435,6 +1447,7 @@ class CodingCanvas(tk.Canvas):
         end_text = cell_text[insert:]
 
         cell_text = start_text + middle_text + end_text
+        cell_text = cell_text.replace("\r", " ")
         self.itemconfigure(item, text=cell_text)
 
         self.highlight(coding_sheet[current_row][current_column])
@@ -1749,9 +1762,17 @@ class TreeCanvas(tk.Canvas):
         self.bind("<Shift-B1-Motion>", self.move_icon)
         self.bind("<Shift-B1-ButtonRelease>", self.icon_restplace)
 
+        self.bind("<MouseWheel>", self.scroll_canvas)
 
+    def scroll_canvas(self, event):
+        # Get the delta value of the mouse wheel
+        delta = event.delta
 
-
+        # Scroll the canvas up or down depending on the delta value
+        if delta > 0:
+            self.yview_scroll(-1, "units")
+        elif delta < 0:
+            self.yview_scroll(1, "units")
 
       # self.bind("<Double-Button-1>", self.double_click)
       # self.bind("<Button-3>", self.menu_boundaryaction)
@@ -2276,9 +2297,12 @@ scroll.pack(side=tk.LEFT, fill=tk.Y)
 
 
 # fix the problem of scrolling afterwards
+scroll_t = tk.Scrollbar(graph_view, orient=tk.VERTICAL)
 tc = TreeCanvas(graph_view, bg="white", selectbackground="blue", confine=1,
-               scrollregion=(0, 0, 1366, 1000))
+               scrollregion=(0, 0, 1366, 1000), yscrollcommand=scroll_t.set)
+scroll_t.config(command=tc.yview)
 tc.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
+scroll_t.pack(side=tk.LEFT, fill=tk.Y)
 
 # print("req size scroll bar:", scroll.winfo_reqwidth())
 # print("req size scroll bar:", scroll.winfo_reqheight())
