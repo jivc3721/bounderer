@@ -1098,6 +1098,8 @@ class CodingCanvas(tk.Canvas):
                 if action_icon[icon_id].action != SETTING and icon_row != icon_oldrow:  # you actually change row
                     icons_origen = self.icons_in_row(icon_oldrow)
                     #take out settings and icons with parents!!!
+                    icons_origen = [icon for icon in icons_origen if action_icon[icon].action != SETTING and
+                                    not action_icon[icon].flow_parents()]
 
                     # below we have to swap max and min? I am thinking in positive numebr when comparing?
 
@@ -1188,6 +1190,8 @@ class CodingCanvas(tk.Canvas):
     def setting_in_row(self, row):
         # returns the iconID is there is already a Setting on the row
         # get the items overlapping cell of icons in that row
+        if row == len(coding_sheet):
+            return 0
         icons = self.icons_in_row(row)
         for icon in icons:
             if action_icon[icon].action == SETTING:
@@ -1448,6 +1452,7 @@ class CodingCanvas(tk.Canvas):
 
         cell_text = start_text + middle_text + end_text
         cell_text = cell_text.replace("\r", " ")
+        cell_text = cell_text.replace("\n", " ")
         self.itemconfigure(item, text=cell_text)
 
         self.highlight(coding_sheet[current_row][current_column])
