@@ -321,6 +321,27 @@ class CodingCanvas(tk.Canvas):
         elif delta < 0:
             self.yview_scroll(1, "units")
 
+    def jump_torow(self, row):
+        global current_row, current_column
+        x_jump, y_jump, x2_jump, y2_jump = self.bbox(coding_sheet[row][current_column])
+        current_row = row
+
+        scrollregion = self.cget("scrollregion")
+        sx1, sy1, sx2, sy2 = map(float, scrollregion.split())
+
+        pos = y_jump/sy2
+        self.yview('moveto', str(pos))
+
+        self.focus_set()  # move focus to canvas
+        self.focus(coding_sheet[current_row][current_column])  # set focus to text item
+        self.index(coding_sheet[current_row][current_column], tk.END)
+        self.highlight(coding_sheet[current_row][current_column])
+
+    def jump_coding(self, row):
+        pass
+
+
+
     def move_to_visibility(self, item):
         # returns 0 if you are visible. 1 if your are after the end of the window
         #    and -1 if you are before the top part of the window
@@ -810,6 +831,12 @@ class CodingCanvas(tk.Canvas):
                     for icon in action_icon:
                         action_icon[icon].flow = action_icon[icon].flow -1\
                             if old_flow < action_icon[icon].flow else action_icon[icon].flow
+
+                    # special case Setting at row 0 changed to non_setting, so flow loses connected status
+                    if action_icon[self.icon_to_edit].row == 0:
+                        action_icon[self.icon_to_edit].orphan = True
+                        self.actualize_flow(self.icon_to_edit)
+
                 else:
                     # so here new_action is a Setting old_action a non_setting
                     self.numbering_new_setting(self.icon_to_edit)
@@ -823,6 +850,12 @@ class CodingCanvas(tk.Canvas):
                             action_icon[icon].flow = action_icon[icon].flow \
                                 if action_icon[icon].flow >= prev_nonsetting or \
                                    icon == self.icon_to_edit else action_icon[icon].flow + 1
+
+                        # Special case in which at row 0 a Non_setting is changed to setting so became connected
+                        if action_icon[self.icon_to_edit].row == 0:
+                            action_icon[self.icon_to_edit].orphan = False
+                            self.actualize_flow(self.icon_to_edit)
+
             else:
                 #This is the part where we do nothing, because here the cases are from a
                 # non_setting to non_setting basically we do not need to do much  (so two cases less)
@@ -1767,6 +1800,9 @@ class TreeCanvas(tk.Canvas):
         self.bind("<Shift-B1-Motion>", self.move_icon)
         self.bind("<Shift-B1-ButtonRelease>", self.icon_restplace)
 
+        self.tag_bind("leaf", "<Double-Button-1>", self.jump_coding)
+
+
         self.bind("<MouseWheel>", self.scroll_canvas)
 
     def scroll_canvas(self, event):
@@ -1784,11 +1820,15 @@ class TreeCanvas(tk.Canvas):
       #
 
     def load_data(self):
+        # creates a list of leafs with the settings in action_icon. in the leafs I have all the information of
+        # an action (row, flow, action, grahp_x, etc)
         self.leafs = [flow for flow in action_icon.values() if flow.action == SETTING]
         if self.leafs:
+            # flow 0 will be at postion 0 in the list
             self.leafs.sort(key=self.leafs[0].sort_byflow)
             graphsize = len(self.leafs)
             self.t_matrix = [[0 for y in range(graphsize)] for x in range(graphsize)]
+        # next for creates a matrix represenation of the graph
         for leaf in self.leafs:
             lnk = leaf.flow_parents()
             for l in lnk :
@@ -1826,7 +1866,8 @@ class TreeCanvas(tk.Canvas):
             leaf = int(self.itemcget(tk.CURRENT, "text"))
             label = "------------------------------" + "\n" + \
                     "flow  : " + str(self.leafs[leaf].flow) + "\n" + \
-                    "note  : " + (self.leafs[leaf].note)
+                    "note  : " + (self.leafs[leaf].note) + "\n" + \
+                    "row   : " + str(self.leafs[leaf].row)
             info = self.create_text(x, y, justify=tk.LEFT, width=250, text=label, tags="info_window", anchor=tk.NW)
             x1, y1, x2, y2 = self.bbox(info)
             rect = self.info_window_ID = self.create_rectangle(x1 - 3, y1 - 3, x2 + 3, y2 + 3,
@@ -1896,6 +1937,19 @@ class TreeCanvas(tk.Canvas):
             leaf_to_actualize = [icon for icon in action_icon.values()
                                  if icon.action == SETTING and icon.flow ==self.leaf_moved][0]
             leaf_to_actualize.graph_x = x
+
+    def jump_coding(self, event):
+        x = self.canvasx(event.x)
+        y = self.canvasy(event.y)
+        if self.type(tk.CURRENT) == "text":
+            leaf = int(self.itemcget(tk.CURRENT, "text"))
+            jump_row = self.leafs[leaf].row
+
+            bring_coding_view()
+            c.update_idletasks()
+            c.jump_torow(jump_row)
+            print("jump")
+
 
 ##_________________________________________________________________________
 ######### End of class TreeCanvas #########################
