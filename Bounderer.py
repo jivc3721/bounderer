@@ -251,6 +251,8 @@ class CodingCanvas(tk.Canvas):
         self.bind("<Shift-KeyPress-Tab>", self.shift_tab)
         self.bind("<Shift-KeyPress-Return>", self.break_comment)
 
+
+
         self.bind("<Control-c>", self.copy_cell)
         self.bind("<Control-C>", self.copy_cell)
         self.bind("<Control-v>", self.paste_cell)
@@ -337,10 +339,25 @@ class CodingCanvas(tk.Canvas):
         self.index(coding_sheet[current_row][current_column], tk.END)
         self.highlight(coding_sheet[current_row][current_column])
 
-    def jump_coding(self, row):
-        pass
-
-
+# returning from tree with a double click on one leaf the idea is to connect with a related icon
+    def create_connection_to(self, destiny_row):
+        second_icon = self.setting_in_row(destiny_row)
+        # the fisrt icon is above the SETTING. In this case the connection is always to the
+        # SETTING referred by the leaf
+        if action_icon[self.first_icon].row <= destiny_row:
+            self.jump_torow(destiny_row)
+            self.connecting_icons(self.first_icon, second_icon)
+        else:
+        # second case the first icon is below the SETTING, so the idea is to connect to the icon in the same flow of
+        # the SETTING selected that is closer from above to the first icom
+            iconlist = [i for i in action_icon.keys() if action_icon[i].flow == action_icon[second_icon].flow and
+                        action_icon[i].row < action_icon[self.first_icon].row]
+            winner = iconlist[0]
+            for i in iconlist:
+                if action_icon[winner].row < action_icon[i].row:
+                    winner = i
+            self.jump_torow(action_icon[winner].row)
+            self.connecting_icons(self.first_icon, winner)
 
     def move_to_visibility(self, item):
         # returns 0 if you are visible. 1 if your are after the end of the window
@@ -605,6 +622,25 @@ class CodingCanvas(tk.Canvas):
             self.delete("info_window")
             self.info_window_on = False
 
+    def connecting_icons(self, icon1, icon2):
+        if action_icon[icon1].row > action_icon[icon2].row:
+            icon1, icon2 = icon2, icon1
+        if not (error_number := self.error_link(icon1, icon2)):
+            old_flow = action_icon[icon2].flow
+            self.create_link(icon1, icon2)
+            self.actualize_flow(icon1)
+            if action_icon[icon2].action != SETTING:
+                # now we have a hole in the numbering....so fix
+                for icon in action_icon.keys():
+                    action_icon[icon].flow = action_icon[icon].flow + 1 \
+                        if action_icon[icon].flow < old_flow and action_icon[icon].flow < 0 \
+                        else action_icon[icon].flow
+            self.itemconfigure(self.first_icon, state=tk.NORMAL)
+            self.config(cursor="arrow")
+            self.ready_forlink = False
+        else:
+            self.error_message(error_number)  # perhaps a warning message
+
     def double_click(self, event):  # set_focus
         global current_row, current_column
         tags = self.gettags(tk.CURRENT)
@@ -612,6 +648,8 @@ class CodingCanvas(tk.Canvas):
             if self.type(tk.CURRENT) == "image":
                 second_icon = self.find_withtag(tk.CURRENT)[0]
                 icon1, icon2 = self.first_icon, second_icon
+
+                # start of connecting_icons
                 if action_icon[icon1].row > action_icon[icon2].row:
                     icon1, icon2 = icon2, icon1
                 if not (error_number := self.error_link(icon1, icon2)):
@@ -629,6 +667,8 @@ class CodingCanvas(tk.Canvas):
                     self.ready_forlink = False
                 else:
                     self.error_message(error_number)  # perhaps a warning message
+                #end of connecting_icons
+
             else:
                 self.itemconfigure(self.first_icon, state=tk.NORMAL)
                 self.config(cursor="arrow")
@@ -1393,6 +1433,8 @@ class CodingCanvas(tk.Canvas):
         if not item:
             return
         insert = self.index(item, tk.INSERT)
+        if event.keysym == "Alt":
+            return
         
         if event.keysym == "Return" and sheet_description[current_column]["enter_behaviour"] == "break_field":
             self.break_field(current_row)    
@@ -1941,15 +1983,17 @@ class TreeCanvas(tk.Canvas):
     def jump_coding(self, event):
         x = self.canvasx(event.x)
         y = self.canvasy(event.y)
-        if self.type(tk.CURRENT) == "text":
-            leaf = int(self.itemcget(tk.CURRENT, "text"))
-            jump_row = self.leafs[leaf].row
 
-            bring_coding_view()
-            c.update_idletasks()
+        leaf = int(self.itemcget(tk.CURRENT, "text"))
+        jump_row = self.leafs[leaf].row
+
+        bring_coding_view()
+        c.update_idletasks()
+        if not c.ready_forlink:
             c.jump_torow(jump_row)
             print("jump")
-
+        else:
+            c.create_connection_to(jump_row)
 
 ##_________________________________________________________________________
 ######### End of class TreeCanvas #########################
@@ -2167,17 +2211,40 @@ def mytrace():
     print("links:", link)
 
 def bring_coding_view():
+    global coding_on_top
+
     tc.addtag_all("erase")
     tc.delete("erase")
     tc.leafs.clear()
     tc.t_matrix.clear()
     coding_view.lift()
+    coding_on_top = True
 
 
 def bring_graph_view():
+    global coding_on_top
+
+    if c.ready_forlink:
+        tc.config(cursor="target")
+    else:
+        tc.config(cursor="arrow")
     tc.load_data()
     tc.paint()
     graph_view.lift()
+    coding_on_top = False
+    return
+
+
+def change_view(event):
+    global coding_on_top
+
+    if coding_on_top:
+        bring_graph_view()
+        coding_on_top = False
+    else:
+        bring_coding_view()
+        coding_on_top = True
+
 
 def field_value(field):
     return c.itemcget(field, "text")
@@ -2185,10 +2252,10 @@ def field_value(field):
 # write the first row in the excel file naming the columns
 def write_excel_header(sheet):
     # "k" stands for this is part of the key that identifies this combination as a unique record
-    # "k_row+k_icon+k_delta_x : provide a unique key to access this particular record
+    # "k_row+k_icon+k_flow : provide a unique key to access this particular record
     sheet.write(1, 1, "k_row")
     sheet.write(1, 2, "k_icon")
-    sheet.write(1, 4, "flow")
+    sheet.write(1, 4, "k_flow")
     sheet.write(1, 3, "parent")
     sheet.write(1, 5, "icon_note")
     sheet.write(1, 6, "time")
@@ -2321,9 +2388,15 @@ def on_closing():
 #  have a separate function for error handling
 # the other thing is handle_key with printable keys and enter, backspace to move the boolean.
 
+
+
+
+
+
 ###################################################################
 ###################################################################
 ###################################################################
+
         
 # MAIN PROGRAM
 
@@ -2362,6 +2435,8 @@ tc = TreeCanvas(graph_view, bg="white", selectbackground="blue", confine=1,
 scroll_t.config(command=tc.yview)
 tc.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
 scroll_t.pack(side=tk.LEFT, fill=tk.Y)
+
+coding_on_top = True
 
 # print("req size scroll bar:", scroll.winfo_reqwidth())
 # print("req size scroll bar:", scroll.winfo_reqheight())
@@ -2412,5 +2487,7 @@ root.configure(menu=menubar)
 
 # bit to make the program ask for saving the file when quiting
 root.protocol("WM_DELETE_WINDOW", on_closing)
+root.bind("<Escape>", change_view)
+# root.bind("<Alt-z>", change_view)
 
 root.mainloop()

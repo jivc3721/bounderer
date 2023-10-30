@@ -255,7 +255,7 @@ class action :
             n = action_icon[n].next_inflow()
         return list_p
 
-    # returns a list with all the actions in the flow
+    # returns a list with all the icons in the flow
     def items_flow(self, current):
         p_flow = []
         p_flow = self.previous_list()
