@@ -108,7 +108,7 @@ class action :
 ## links      : a tuple with the lineIDs that connect to other icons
 ## note       : notes enter by the user about a particular icon
 ## graph_x "  : if the icon is a Setting, this will represent the position in X of this flow on the graph_view
-## flow_color : in case of non-orphan flows, this will be the color
+## flow_color : color of the flow. if orphan the line is dotted keeping the color
 ## orphan     : when false, the flow is connected to another flow that starts with a Setting.
 ##                  when true, the flow does not start with a Setting or that initial Setting is
 ##                  disconnected from a Setting. Only exception Setting at 0.
@@ -265,13 +265,12 @@ class action :
         return p_flow
 
     # returns the iconID of the first icon of the flow
-    def first_inflow(self):
+    def first_inflow(self, current):
+        safe = current
         previous = self.previous_inflow()
-        safe = previous
         while previous:
             safe = previous
             previous = self.previous_inflow()
-
         return safe
 
     def enclosing_settings(self):

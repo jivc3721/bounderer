@@ -572,9 +572,8 @@ class CodingCanvas(tk.Canvas):
         lnk = self.find_withtag(tk.CURRENT)[0]
         icon1 = link[lnk][0]
         icon2 = link[lnk][1]
-        icon_parent = action_icon[icon1].first_inflow()
-        if icon_parent == 0:
-            icon_parent = icon1
+        # icon_parent = action_icon[icon1].first_inflow(icon1)
+        icon_parent = icon1
         flow_name = action_icon[icon_parent].note[:15] if action_icon[icon_parent].note else "--------------"
         label = "Flow " + str(action_icon[icon1].flow) + "  ::  " + flow_name + "\n" + \
                 "From row  " + str(action_icon[icon1].row) + "  to  " + str(action_icon[icon2].row) + "\n" + \
