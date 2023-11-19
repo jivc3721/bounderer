@@ -1341,6 +1341,31 @@ class CodingCanvas(tk.Canvas):
                 sblnk_color = self.action_tkcolor(action_icon[link[lk][1]].flow_color)
                 # if the sublink is currently orphan, but the parent flow is not orphan
                 # and all the predecessors are connected change the sublink to not orphan
+                if not action_icon[link[lk][1]].unconnected_predecessors():
+                    sublnk = action_icon[link[lk][1]].disseminate_toicons\
+                        (link[lk][1], action_icon[link[lk][1]].flow_color, False)
+                    for sl in sublnk:
+                        self.itemconfigure(sl, fill=sblnk_color, dash=CONNECTED_DASH)
+                # if the parent flow is orphan and the sublink is not orphan, we need to put the sublink as orphan
+                else :
+                    sublnk = action_icon[link[lk][1]].disseminate_toicons(link[lk][1],
+                                                                      action_icon[link[lk][1]].flow_color, True)
+                    for sl in sublnk:
+                        self.itemconfigure(sl, fill=sblnk_color, dash=UNCONNECTED_DASH)
+
+
+
+    def actualize_flowOld(self, icon1):
+        color = action_icon[icon1].flow_color
+        orphan_st = action_icon[icon1].orphan
+        flow_dash = UNCONNECTED_DASH if orphan_st else CONNECTED_DASH
+        lnks = action_icon[icon1].disseminate_toicons(icon1, color, orphan_st)
+        for lk in lnks:
+            self.itemconfigure(lk, fill=self.action_tkcolor(color), dash=flow_dash)
+            if action_icon[link[lk][1]].action == SETTING:
+                sblnk_color = self.action_tkcolor(action_icon[link[lk][1]].flow_color)
+                # if the sublink is currently orphan, but the parent flow is not orphan
+                # and all the predecessors are connected change the sublink to not orphan
                 if (not orphan_st) and action_icon[link[lk][1]].orphan and \
                         (not action_icon[link[lk][1]].unconnected_predecessors()):
                     sublnk = action_icon[link[lk][1]].disseminate_toicons\

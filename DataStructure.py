@@ -131,6 +131,8 @@ class action :
 
     # it returns a list of links to orphan predecesors
     def unconnected_predecessors(self):
+        if self.action == SETTING and self.row == 0:
+            return []
         # basically from the self(current node) return those lnk that are unconnected, that is to say
         # the predecesor [lnk][0] is unconnected and is connected to the current, but becasue the predecessor
         # is unconnected this also is unconnected.
@@ -199,7 +201,9 @@ class action :
     # returns the ID number of the icon next to this in the same flow. returns 0 if there is none
     def next_inflow(self):
         #it looks through the links of this icon, and creates a list of those links that lead to next icon in the
-        # the same flow. Same flow here is number of flow is the same or the number is unconnected (flow <0).
+        # the "same" flow. the criteria for next is not the flow number. It is basically that the icon of destiny
+        # is not self, that menas self is a point of origen, so the icon at the other end is next. The only
+        # exceptions is if we find a Setting, that means decisively the next icon is not from this flow, so we return 0.
         tmp = [lnk for lnk in self.links if action_icon[link[lnk][1]] != self and
                action_icon[link[lnk][1]].action != SETTING]
         if tmp:
@@ -226,8 +230,9 @@ class action :
 
     # returns the ID number of the icon previous to this in the same flow. returns 0 if there is none
     def previous_inflow(self):
-        #it looks through the links of this icon, and creates a list of those links that lead to next icon in the
-        # the same flow
+        #it looks through the links of this icon, and creates a list of those links that lead to previous icon in the
+        # the same flow.... [lnl][0] refers to the origen of the link, and that link has as flow number the same
+        # as the icon in self, and the origen is not self....that imply self is the destiny.
         tmp = [lnk for lnk in self.links if action_icon[link[lnk][0]].flow == self.flow and
                action_icon[link[lnk][0]] != self]
         if tmp:
@@ -237,25 +242,28 @@ class action :
         else:
             return 0
 
-    # list of ID icons in the flow previous to the current one
+    # list of ID icons in the flow previous to the current one (current one not included)
+    # the list is ordered. in [0] we find the first iconID of the flow
     def previous_list(self):
-        previous = self.previous_inflow()
         list_p = []
+        previous = self.previous_inflow()
         while previous:
             list_p.insert(0, previous)
             previous = action_icon[previous].previous_inflow()
         return list_p
 
-    # list of ID icons in the flow after the current one
+    # list of ID icons in the flow after the current one (current one not included)
+    # the list is ordered in [-1] we find the last IconID of the flow
     def upcoming_list(self):
-        n = self.next_inflow()
         list_p = []
+        n = self.next_inflow()
         while n:
             list_p.append(n)
             n = action_icon[n].next_inflow()
         return list_p
 
-    # returns a list with all the icons in the flow
+    # returns a list with all the icons in the flow...dirty trick...the current one is pass as argument
+    # the list is ordered from the first icon of the flow [0] to the last one in [-1]
     def items_flow(self, current):
         p_flow = []
         p_flow = self.previous_list()
@@ -313,8 +321,10 @@ class action :
 
 
 
-    # takes the current (IconID) flow number, and disseminate the number with a color an an orphan state
-    # also it reurns the links connecting the icons implied, also with the terminations of those connection where
+    # takes the current (IconID) flow number, and disseminate that number plus color and orphan state to
+    # the connected icons to this flow (notice that sometimes the number of the flow is changing in some icons
+    # so we rely in the links connecting the icons to figure out that they are on the same flow....
+    # also it returns the links connecting the icons implied, including the terminations of those connections where
     # new flows start
     def disseminate_toicons(self, current, new_color, orphan_state):
         f_number = action_icon[current].flow
@@ -324,12 +334,14 @@ class action :
             action_icon[item].flow = f_number
             action_icon[item].flow_color = new_color
             action_icon[item].orphan = orphan_state
+            # gets the lnks in which the node of origen is the one specified by the item....if not is not part of
+            # the flow because the items of the flow were selected by items_flow....need to check!!
             lnks = [lnk for lnk in action_icon[item].links if action_icon[link[lnk][0]].flow == f_number]
             for lk in lnks:
                 lnk_toreturn.append(lk)
         return lnk_toreturn
-
-
+#perhaps this is a better condition? basically the link points forward...
+#   lnks = [lnk for lnk in action_icon[item].links if link[lnk][0] == item
 
 coding_sheet = [] # the structure pointing to the widgets, the "spreadsheet" [rows][columns]
 sheet_description = []  # describes the properties of each column
