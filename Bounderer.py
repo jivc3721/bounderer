@@ -1329,7 +1329,6 @@ class CodingCanvas(tk.Canvas):
 ################################# Orphans and not Orphan Flows Visualization
 ############################################################################
 
-
     def actualize_flow(self, icon1):
         color = action_icon[icon1].flow_color
         orphan_st = action_icon[icon1].orphan
