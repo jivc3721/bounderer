@@ -1,4 +1,6 @@
 
+SW_VER = "Version Beta 0.1"
+DATE_VER = "Dec 1/2023"
 
 # with import we use the name of the module or alias to invoke contents
 # with from... we can bypass the name of the module when invoking
@@ -362,6 +364,39 @@ class CodingCanvas(tk.Canvas):
     def move_to_visibility(self, item):
         # returns 0 if you are visible. 1 if your are after the end of the window
         #    and -1 if you are before the top part of the window
+
+
+        return 0
+        x1, y1, x2, max_y = self.bbox(item)
+        window_height = self.config("height")[4]
+        current_i = self.index(item, tk.INSERT)
+        # print("ïndex=", current_i, "LINE_SPACE: ", LINE_SPACE)
+        # for y in range(y1, max_y):
+        #     print("y:",y, " pivot_i:", self.index(item, "@%d,%d" % (x1, y)))
+
+        pivot_y = y1
+        pivot_i = self.index(item, "@%d,%d" % (x1, pivot_y))
+        while current_i >= pivot_i:
+            pivot_y += LINE_SPACE + 1
+            if pivot_y > max_y:
+                pivot_y -= LINE_SPACE - 1
+                break
+            pivot_i = self.index(item, "@%d,%d" % (x1, pivot_y))
+        else:
+            pivot_y -= LINE_SPACE -1
+
+        print ("heigth:", self.canvasy(0), self.canvasy(int(window_height)), "y1, max_y", y1,max_y)
+        if pivot_y <= self.canvasy(0):
+            return -1
+        elif pivot_y > self.canvasy(int(window_height)):
+            return 1
+        else:
+            return 0
+
+    def move_to_visibilityOld(self, item):
+        # returns 0 if you are visible. 1 if your are after the end of the window
+        #    and -1 if you are before the top part of the window
+        return 0
         x1, y1, x2, y2 = self.bbox(item)
         window_height = self.config("height")[4]
         currentIndx = self.index(item, tk.INSERT)
@@ -377,6 +412,8 @@ class CodingCanvas(tk.Canvas):
             return 1
         else:
             return 0
+
+
 
     def action_tkcolor(self, c):
         return LINK_COLOR_V[c]
@@ -461,15 +498,16 @@ class CodingCanvas(tk.Canvas):
             # Old division
             self.fit_box_text(current_row)
             self.fix_graph(current_row)
-            self.update_idletasks()
-            bx1, by1, bx2, by2 = self.bbox('all')
+
+        self.update_idletasks()
+        bx1, by1, bx2, by2 = self.bbox('all')
+        self.print_state(item)
+        scrollregion = self.cget("scrollregion")
+        sx1, sy1, sx2, sy2 = map(float, scrollregion.split())
+        if sy2 != by2 :
+            self.configure(scrollregion=(0, 0, 1366, by2))
             self.print_state(item)
-            scrollregion = self.cget("scrollregion")
-            sx1, sy1, sx2, sy2 = map(float, scrollregion.split())
-            if sy2 != by2 :
-                self.configure(scrollregion=(0, 0, 1366, by2))
-                self.print_state(item)
-                self.yview_scroll(0, tk.UNITS)
+            self.yview_scroll(0, tk.UNITS)
 
 ##___________________________End Actualising Adapting Visualization
 ##_________________________________________________________________
@@ -1516,8 +1554,8 @@ class CodingCanvas(tk.Canvas):
         self.update_idletasks()
         m = self.move_to_visibility(item)
         while m != 0:
-            self.yview(tk.SCROLL, m, tk.UNITS)
-            m = self.move_to_visibility(item)
+           self.yview(tk.SCROLL, m, tk.UNITS)
+           m = self.move_to_visibility(item)
 
     def shift_tab(self, event):
         item = self.has_focus()
@@ -2027,19 +2065,6 @@ def print_coding():
     c.postscript(file="print.ps", colormode="color")
     os.startfile("print.ps", "print")
 
-    # # filename = tempfile.mktemp(".txt")
-    # # open(filename, "w").write("This is a test")
-    # win32api.ShellExecute(
-    #     0,
-    #     "printto",
-    #     "print.ps",
-    #     '"%s"' % win32print.GetDefaultPrinter(),
-    #     ".",
-    #     0
-    # )
-
-
-
 def nothing_to_do():
     pass
 
@@ -2172,7 +2197,7 @@ def open_file():
                 c.create_link(icon1, icon2)
             codingfile = filename
         f.close()
-        root.title("Bounderer Vr. Alfa ::: " + filename)
+        root.title("Bounderer " + SW_VER + " ::: " + filename)
         current_row = 0
         current_column = TIME_COLUMN
 
@@ -2216,7 +2241,7 @@ def save_coding():
                     str(action_icon[icon2].delta_x) + " " +
                     "\n")
         f.close()
-        root.title("Bounderer Vr. Alfa ::: " + codingfile)
+        root.title("Bounderer" + SW_VER + " ::: " + codingfile)
 
 def save_coding_as():
     global codingfile
@@ -2411,9 +2436,15 @@ def on_closing():
 #  have a separate function for error handling
 # the other thing is handle_key with printable keys and enter, backspace to move the boolean.
 
+def about_window():
+    message = "Bounderer for Boundary Games Analysis\n" + \
+              SW_VER + "\n" + \
+              DATE_VER + "\n" + \
+              "Jorge Velez-Castiblanco" + "\n" + \
+              "Universidad Eafit" + "\n" + \
+              "Medellin-Colombia"
 
-
-
+    messagebox.showinfo("", message)
 
 
 ###################################################################
@@ -2425,7 +2456,7 @@ def on_closing():
 
 
 root = tk.Tk()
-root.title("Bounderer Vr. Alfa")
+root.title("Bounderer " + SW_VER + " ::: ")
 root.geometry("1366x400+0+0")
 #print("new Screen size:", root.winfo_screenwidth())
 #print("screen size y:", root.winfo_screenheight())
@@ -2439,12 +2470,12 @@ coding_view.place(relheight=1, relwidth=1)
 default_font = tkf.nametofont("TkDefaultFont")
 default_font.configure(size=12)
 LINE_SPACE = default_font.metrics("linespace")
-# print("LineSpace:", LINE_SPACE)
+print("LineSpace:", LINE_SPACE)
 txt_col = "Row" + (" "*9) + "Time"+(" "*11) +"Actor"+(" "*21) +"Coding"+(" "*90) +"Transcript" + (" "*68) + "Comment"
 col_names = tk.Label(coding_view, text=txt_col, background="black", foreground="white", anchor=tk.NW)
 scroll = tk.Scrollbar(coding_view, orient=tk.VERTICAL)
 c = CodingCanvas(coding_view, bg="white", selectbackground="blue", confine=1,
-               scrollregion=(0, 0, 1366, 100000), yscrollcommand=scroll.set)
+               scrollregion=(0, 0, 1366, 100), yscrollcommand=scroll.set)
 scroll.config(command=c.yview)
 col_names.pack(side=tk.TOP,fill=tk.X, pady=8)
 c.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
@@ -2470,8 +2501,12 @@ menubar = tk.Menu(root)
 menuFile = tk.Menu(menubar, tearoff=0)
 
 menuExport = tk.Menu(menuFile, tearoff=0)
-menuExport.add_command(label="PDF", command=print_coding)
+menuExport.add_command(label="Post Script", command=print_coding)
 menuExport.add_command(label="Excel", command=export_excel)
+
+menuExportTree = tk.Menu(menuFile, tearoff=0)
+menuExportTree.add_command(label="Post Script", command=nothing_to_do)
+menuExportTree.add_command(label="GRAPHML", command=export_graph)
 
 menuFile.add_command(label="New", command=new_file)
 menuFile.add_command(label="Open", command=open_file)
@@ -2479,7 +2514,7 @@ menuFile.add_command(label="Save", command=save_coding)
 menuFile.add_command(label="Save As...", command=save_coding_as)
 menuFile.add_command(label="Import", command=import_file)
 menuFile.add_cascade(label="Export coding", menu=menuExport)
-menuFile.add_command(label="Export Tree", command=export_graph)
+menuFile.add_cascade(label="Export Tree", menu=menuExportTree)
 menuFile.add_command(label="Exit", command=nothing_to_do)
 
 
@@ -2501,7 +2536,7 @@ menubar.add_cascade(label="File", menu=menuFile)
 menubar.add_cascade(label="View", menu=menuView)
 # menubar.add_cascade(label="Verify", menu=menuVerify)
 # menubar.add_cascade(label="Settings", menu=menuSettings)
-menubar.add_command(label="About", command=nothing_to_do)
+menubar.add_command(label="About", command=about_window)
 # menubar.add_command(label="Search", command=nothing_to_do)
 
 codingfile = ""
