@@ -58,6 +58,8 @@ error_message[511] = "Error 511 Change produces a NON-SETTING with multiple pare
 
 error_message[601] = "Error 601 before erasing the current row, move or erase the icons on the row"
 
+error_message[701] = "Without a name, no PostScrip generated"
+
 
 action_icon = {}
 ## Intended use: a dictionary of class action items

@@ -615,7 +615,8 @@ class CodingCanvas(tk.Canvas):
         flow_name = action_icon[icon_parent].note[:15] if action_icon[icon_parent].note else "--------------"
         label = "Flow " + str(action_icon[icon1].flow) + "  ::  " + flow_name + "\n" + \
                 "From row  " + str(action_icon[icon1].row) + "  to  " + str(action_icon[icon2].row) + "\n" + \
-                ICON_NAME[action_icon[icon1].action] + " to " + ICON_NAME[action_icon[icon2].action]
+                ICON_NAME[action_icon[icon1].action] + " to " + ICON_NAME[action_icon[icon2].action] + "\n" + \
+                "LnkID: " + str(lnk)
 
         text = self.create_text(x, y, justify=tk.LEFT, width=250, text=label, tags="info_window", anchor=tk.N)
         x1, y1, x2, y2 = self.bbox(text)
@@ -636,7 +637,8 @@ class CodingCanvas(tk.Canvas):
         icon_note = action_icon[icon].note if action_icon[icon].note else "No comment"
         label = ICON_NAME[action_icon[icon].action] + "\n" + \
                 "»» " + icon_note + "\n" + \
-                "»» Belongs to flow " + str(action_icon[icon].flow)
+                "»» Belongs to flow " + str(action_icon[icon].flow) + "\n" + \
+                "iconID: " + str(icon)
                 # "row   : " + str(action_icon[icon].row) + \
                 # "IconID: " + str(icon)
         # "Orphan: " + str(action_icon[icon].orphan) + "\n" +   \
@@ -1443,7 +1445,7 @@ class CodingCanvas(tk.Canvas):
         self.icon_note = tk.StringVar(value=action_icon[self.icon_to_edit].note)
         self.flow_color = tk.IntVar(value=action_icon[self.icon_to_edit].flow_color)
 
-        l1 = ttk.Label(edit_window, text="Icon memo : ")
+        l1 = ttk.Label(edit_window, text="Icon label : ")
         e1 = ttk.Entry(edit_window, textvariable=self.icon_note, width=45)
         l2 = ttk.Label(edit_window, text="Flow color->")
 
@@ -2061,9 +2063,22 @@ class TreeCanvas(tk.Canvas):
 ##_________________________________________________________________________
 
 
-def print_coding():
-    c.postscript(file="print.ps", colormode="color")
-    os.startfile("print.ps", "print")
+def coding_to_ps():
+    ps_file = filedialog.asksaveasfilename(title="Save Coding as Post Script", defaultextension=".ps",
+                                            filetypes=(("PostScript", "*.ps"), ("all files", "*.*")))
+    if ps_file :
+        c.postscript(file="print.ps", colormode="color")
+    else:
+        c.error_message(701)
+
+def graph_to_ps():
+    ps_file = filedialog.asksaveasfilename(title="Save Tree as Post Script", defaultextension=".ps",
+                                            filetypes=(("PostScript", "*.ps"), ("all files", "*.*")))
+    if ps_file :
+        tc.postscript(file="print.ps", colormode="color")
+    else:
+        c.error_message(701)
+
 
 def nothing_to_do():
     pass
@@ -2501,11 +2516,11 @@ menubar = tk.Menu(root)
 menuFile = tk.Menu(menubar, tearoff=0)
 
 menuExport = tk.Menu(menuFile, tearoff=0)
-menuExport.add_command(label="Post Script", command=print_coding)
+menuExport.add_command(label="Post Script", command=coding_to_ps)
 menuExport.add_command(label="Excel", command=export_excel)
 
 menuExportTree = tk.Menu(menuFile, tearoff=0)
-menuExportTree.add_command(label="Post Script", command=nothing_to_do)
+menuExportTree.add_command(label="Post Script", command=graph_to_ps)
 menuExportTree.add_command(label="GRAPHML", command=export_graph)
 
 menuFile.add_command(label="New", command=new_file)
