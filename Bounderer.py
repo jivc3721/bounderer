@@ -422,6 +422,7 @@ class CodingCanvas(tk.Canvas):
 ####################################################################
 
     def redraw_links(self):
+        self.update_idletasks()
         for ln in link:
             icon1 = link[ln][0]
             icon2 = link[ln][1]
@@ -884,6 +885,7 @@ class CodingCanvas(tk.Canvas):
     def change_icon(self, new_action):
         if not (error := self.error_change(self.icon_to_edit, new_action)):
             self.itemconfigure(self.icon_to_edit, image=self.ICONS[new_action])
+            self.itemconfigure(self.icon_to_edit, disabledimage=self.ICONS[new_action + 6])
             old_action = action_icon[self.icon_to_edit].action
             action_icon[self.icon_to_edit].action = new_action
 
@@ -1798,6 +1800,7 @@ class CodingCanvas(tk.Canvas):
 
             shift_y = self.maxy_row(row) - self.fit_box(coding_sheet[row][0])[1] + CELL_GAP_Y
             self.move("move", 0, shift_y)
+            self.redraw_links()
             self.dtag("move", "move")
         else:
             self.new_row(row, contents)
@@ -2075,6 +2078,20 @@ def graph_to_ps():
     ps_file = filedialog.asksaveasfilename(title="Save Tree as Post Script", defaultextension=".ps",
                                             filetypes=(("PostScript", "*.ps"), ("all files", "*.*")))
     if ps_file :
+        # basically at the beggining we erase all the data of the tree (perhaps we are not there perhaps yes, we do
+        # not know, so better erase all. Calculate all, paint the whole tree and move to this view to let people know
+        # wgat there were saving
+        tc.addtag_all("erase")
+        tc.delete("erase")
+        tc.leafs.clear()
+        tc.t_matrix.clear()
+
+        tc.load_data()
+        tc.paint()
+        graph_view.lift()
+
+        tc.load_data()
+
         tc.postscript(file="print.ps", colormode="color")
     else:
         c.error_message(701)
@@ -2407,7 +2424,7 @@ def export_graph():
                                             filetypes=(("GraphML type", "*.GRAPHML"), ("all files", "*.*")))
     if filename:
         # basically at the beggining we erase all the data of the tree (perhaps we are not there perhaps yes, we do
-        # not know, so better erase all. Calcualte all, pait the whole tree and move to this view to let people know
+        # not know, so better erase all. Calculate all, paint the whole tree and move to this view to let people know
         # wgat there were saving
         tc.addtag_all("erase")
         tc.delete("erase")
