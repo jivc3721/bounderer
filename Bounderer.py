@@ -1,6 +1,6 @@
 
-SW_VER = "Version Beta 0.1"
-DATE_VER = "Dec 1/2023"
+SW_VER = "Version Beta 0.2"
+DATE_VER = "Feb 6/2024"
 
 # with import we use the name of the module or alias to invoke contents
 # with from... we can bypass the name of the module when invoking
@@ -2473,8 +2473,8 @@ def about_window():
               SW_VER + "\n" + \
               DATE_VER + "\n" + \
               "Jorge Velez-Castiblanco" + "\n" + \
-              "Universidad Eafit" + "\n" + \
-              "Medellin-Colombia"
+              "jivelez@eafit.edu.co" + "\n" + \
+              "Universidad Eafit - Colombia"
 
     messagebox.showinfo("", message)
 
