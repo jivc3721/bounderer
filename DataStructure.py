@@ -34,7 +34,7 @@ error_message[101] = "Error 101 Only one Setting per row is allowed"
 error_message[102] = "Error 102 Following and Enhancing are not compatible with Setting in the same row"
 
 error_message[201] = "Error 201 A Non Setting cannot have more than one predecessor"
-error_message[202] = "Error 202 Any action can have multiple Settings as childs, but only one Non Setting successor"
+error_message[202] = "Error 202 Any action can have multiple Settings as children, but only one Non Setting successor"
 error_message[204] = "Error 204 You cannot connect two icons belonging to the same row"
 
 error_message[205] = "Error 205 Setting has to be connected to the  last immediate action of the parent flow"
@@ -55,6 +55,7 @@ error_message[401] = "Error 401 Before erasing the icon, erase the links to it"
 error_message[501] = "Error 501 Forbidden to have another SETTING in a row with an already present SETTING"
 error_message[502] = "Error 502 Change produces a combination of icons not allowed"
 error_message[511] = "Error 511 Change produces a NON-SETTING with multiple parents"
+error_message[512] = "Error 512 Change branches two Non-Setting flows for a previous action"
 
 error_message[601] = "Error 601 before erasing the current row, move or erase the icons on the row"
 

@@ -880,6 +880,14 @@ class CodingCanvas(tk.Canvas):
             if new_action != SETTING and len(parents) > 1:
                 return 511
 
+            # Error 512 Change branches two Non-Setting flows for a previous action
+            if action_icon[icon_id].action == SETTING and new_action != SETTING:
+                previous = action_icon[icon_id].icon_parents()
+                if previous:
+                    for lnk in action_icon[previous[0]].links:
+                        if action_icon[link[lnk][1]].action != SETTING:
+                            return 512
+
         return 0
 
     def change_icon(self, new_action):
