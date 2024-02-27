@@ -1940,15 +1940,16 @@ class TreeCanvas(tk.Canvas):
         # an action (row, flow, action, grahp_x, etc)
         self.leafs = [flow for flow in action_icon.values() if flow.action == SETTING]
         if self.leafs:
-            # flow 0 will be at postion 0 in the list
+            # flow 0 will be at position 0 in the list
             self.leafs.sort(key=self.leafs[0].sort_byflow)
             graphsize = len(self.leafs)
             self.t_matrix = [[0 for y in range(graphsize)] for x in range(graphsize)]
-        # next for creates a matrix represenation of the graph
+        # next for creates a matrix representation of the graph
         for leaf in self.leafs:
             lnk = leaf.flow_parents()
             for l in lnk :
                 self.t_matrix[leaf.flow][l] = 1
+
 
     def paint(self):
         self.ref = self.create_line(50, -10, 51, -10)
