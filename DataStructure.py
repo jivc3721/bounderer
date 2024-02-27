@@ -30,9 +30,12 @@ SETTING_COMPATIBLE = {SETTING, CHALLENGING, WANDERING, PROBING}
 
 error_message = {}
 error_message[1]   = "Error 1 Area not available for dropping Icons"
+
+# Errors placing icons
 error_message[101] = "Error 101 Only one Setting per row is allowed"
 error_message[102] = "Error 102 Following and Enhancing are not compatible with Setting in the same row"
 
+# errors creating links
 error_message[201] = "Error 201 A Non Setting cannot have more than one predecessor"
 error_message[202] = "Error 202 Any action can have multiple Settings as children, but only one Non Setting successor"
 error_message[204] = "Error 204 You cannot connect two icons belonging to the same row"
@@ -42,6 +45,7 @@ error_message[206] = "Error 206 Link produces a Setting not connected to the las
 
 ## not needed  error_message[207] = "Error 207 Link produces a Setting connected to the same flow in two points"
 
+# Errors moving icons
 error_message[301] = "Error 301 Moving a Setting to a row with an already present Setting"
 error_message[302] = "Error 302 Moving a Setting, Following or Enhancing to row with an already present Setting"
 
@@ -50,8 +54,10 @@ error_message[306] = "Error 306 Moving the icon disrupts previously established 
 error_message[307] = "Error 307 Moving a Setting out of enclosing Settings"
 error_message[308] = "Error 308 Moving a Non Setting out of enclosing Non Settings"
 
+# Errors erasing
 error_message[401] = "Error 401 Before erasing the icon, erase the links to it"
 
+# Errors changing an icon for another
 error_message[501] = "Error 501 Forbidden to have another SETTING in a row with an already present SETTING"
 error_message[502] = "Error 502 Change produces a combination of icons not allowed"
 error_message[511] = "Error 511 Change produces a NON-SETTING with multiple parents"
@@ -59,6 +65,7 @@ error_message[512] = "Error 512 Change branches two Non-Setting flows for a prev
 
 error_message[601] = "Error 601 before erasing the current row, move or erase the icons on the row"
 
+# Errors in file management
 error_message[701] = "Without a name, no PostScrip generated"
 
 
