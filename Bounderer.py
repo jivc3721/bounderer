@@ -1946,7 +1946,9 @@ class TreeCanvas(tk.Canvas):
             self.t_matrix = [[0 for y in range(graphsize)] for x in range(graphsize)]
         # next for creates a matrix representation of the graph
         for leaf in self.leafs:
-            lnk = leaf.flow_parents()
+            lnk_tmp = leaf.flow_parents()
+            # do not include negative parents
+            lnk = [l for l in lnk_tmp if l >= 0]
             for l in lnk :
                 self.t_matrix[leaf.flow][l] = 1
 
