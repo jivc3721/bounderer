@@ -49,10 +49,12 @@ error_message[206] = "Error 206 Link produces a Setting not connected to the las
 error_message[301] = "Error 301 Moving a Setting to a row with an already present Setting"
 error_message[302] = "Error 302 Moving a Setting, Following or Enhancing to row with an already present Setting"
 
-error_message[305] = "Error 305 Move produces an Setting not connected to the last immediate action of a parent flow"
+error_message[305] = "Error 305 The Setting moved has to be connected to the last immediate action of a parent flow"
 error_message[306] = "Error 306 Moving the icon disrupts previously established sequence. Delete links before moving"
 error_message[307] = "Error 307 Moving a Setting out of enclosing Settings"
 error_message[308] = "Error 308 Moving a Non Setting out of enclosing Non Settings"
+# error 315 and 305 are related....I thought about making them the same error
+error_message[315] = "Error 315 This move produces Setting(s) not connected to the last immediate action of a parent flow"
 
 # Errors erasing
 error_message[401] = "Error 401 Before erasing the icon, erase the links to it"
@@ -185,6 +187,10 @@ class action :
             parents.append(link[p][0])
         return parents
 
+    # def icons_down(self):
+    #     succesors = [lnk for lnk in self.links if action_icon[link[lnk][1]] != self]
+
+
     # returns the number of the closest row upwards where this action is connected with another icon
     # if not connection is available, it says that the row is -1
     def closest_rowup(self):
@@ -294,8 +300,8 @@ class action :
     def enclosing_settings(self):
         d_past = self.row + 1
         d_later = len(coding_sheet) + 1
-        past = 0
-        later = 0
+        past = None
+        later = None
         for icon in action_icon:
             if action_icon[icon].action == SETTING and action_icon[icon].row < self.row:
                 d = self.row - action_icon[icon].row
@@ -303,12 +309,16 @@ class action :
                     past = icon
                     d_past = d
             if action_icon[icon].action == SETTING and action_icon[icon].row > self.row:
-                d = self.row - action_icon[icon].row
+                d = abs(self.row - action_icon[icon].row)
                 if d < d_later:
                     later = icon
                     d_later = d
         return past, later
 
+# here the routine gives the ID of the icons surronding the icon in focus. If there are no icon behind or forward
+    # it will return None in the variables past and later. The rutine works by calculating the distance of Settings to
+    # this Setting. The ones with the smaller distance are the ones enclosing the Setting in focus. Note that for
+    # calculating the distance of the later icons I sued ABS to avoid the problem of big distances being negative
     def enclosing_nonsettings(self):
         d_past = self.row + 1
         d_later = len(coding_sheet) + 1
@@ -323,7 +333,7 @@ class action :
                     d_past = d
             if action_icon[icon].action != SETTING and action_icon[icon].row > self.row and \
                 not action_icon[icon].previous_list():
-                d = self.row - action_icon[icon].row
+                d = abs(self.row - action_icon[icon].row)
                 if d < d_later:
                     later = icon
                     d_later = d

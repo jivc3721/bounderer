@@ -1,6 +1,6 @@
 
-SW_VER = "Version Beta 0.2"
-DATE_VER = "Feb 6/2024"
+SW_VER = "Version Beta 0.3"
+DATE_VER = "March 1/2024"
 
 # with import we use the name of the module or alias to invoke contents
 # with from... we can bypass the name of the module when invoking
@@ -884,9 +884,12 @@ class CodingCanvas(tk.Canvas):
             if action_icon[icon_id].action == SETTING and new_action != SETTING:
                 previous = action_icon[icon_id].icon_parents()
                 if previous:
+                    c = 0
                     for lnk in action_icon[previous[0]].links:
                         if action_icon[link[lnk][1]].action != SETTING:
-                            return 512
+                            c+=1
+                    if c >1:
+                        return 512
 
         return 0
 
@@ -915,6 +918,7 @@ class CodingCanvas(tk.Canvas):
                             action_icon[icon].flow = action_icon[icon].flow \
                                 if action_icon[icon].flow > action_icon[self.icon_to_edit].flow or \
                             icon == self.icon_to_edit else action_icon[icon].flow -1
+                        self.actualize_flow(self.icon_to_edit)
 
                     # now renumber Settings, we have one SETTING less so add -1
                     for icon in action_icon:
@@ -939,7 +943,7 @@ class CodingCanvas(tk.Canvas):
                             action_icon[icon].flow = action_icon[icon].flow \
                                 if action_icon[icon].flow >= prev_nonsetting or \
                                    icon == self.icon_to_edit else action_icon[icon].flow + 1
-
+                        self.actualize_flow(self.icon_to_edit)
                         # Special case in which at row 0 a Non_setting is changed to setting so became connected
                         if action_icon[self.icon_to_edit].row == 0:
                             action_icon[self.icon_to_edit].orphan = False
@@ -1144,7 +1148,7 @@ class CodingCanvas(tk.Canvas):
             if not actions_in_row.issubset(setting_compatible) :
                 return 302
 
-        # error 305 Move produces an Setting not connected to the last immediate action of a parent flow
+        # error 305 Move produces a Setting(s) not connected to the last immediate action of a parent flow
         if action_icon[icon_ID].action == SETTING:
             predecessors = action_icon[icon_ID].icon_parents()
             succesors = []
@@ -1174,7 +1178,7 @@ class CodingCanvas(tk.Canvas):
                     return 307
 
         # Error 308 Moving a Non Setting out of enclosing Non Settings
-        # perhaps I also have to chech no links above and below?
+        # perhaps I also have to check no links above and below?
         if action_icon[icon_ID].action != SETTING and not(action_icon[icon_ID].previous_list()):
             past, later = action_icon[icon_ID].enclosing_nonsettings()
             if past:
@@ -1183,6 +1187,23 @@ class CodingCanvas(tk.Canvas):
             if later:
                 if to_row > action_icon[later].row:
                     return 308
+
+        # Error 315 This move produces Setting(s) not connected to the last immediate action of a parent flow
+        if action_icon[icon_ID].action != SETTING:
+            predecessors = action_icon[icon_ID].icon_parents()
+            succesors = []
+            for p in predecessors:
+                s = action_icon[p].next_inflow()
+                if s:
+                    if action_icon[s].row <= to_row
+
+                    succesors.append(action_icon[s].row)
+                if succesors:
+                    succesors.sort()
+                    if to_row <= succesors[0]:
+                        return 315
+
+
         return 0
 
     def icon_restplace(self, event):
