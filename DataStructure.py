@@ -193,7 +193,7 @@ class action :
         for child in children_links:
             children.append(link[child][1])
         return children
-
+#
 
     # returns the number of the closest row upwards where this action is connected with another icon
     # if not connection is available, it says that the row is -1

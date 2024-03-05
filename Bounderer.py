@@ -1198,7 +1198,7 @@ class CodingCanvas(tk.Canvas):
                     for child in children:
                         if action_icon[child].row > to_row:
                             return 315
-
+#
         return 0
 
     def icon_restplace(self, event):
