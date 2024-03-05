@@ -888,7 +888,7 @@ class CodingCanvas(tk.Canvas):
                     for lnk in action_icon[previous[0]].links:
                         if action_icon[link[lnk][1]].action != SETTING:
                             c+=1
-                    if c >1:
+                    if c >=1:
                         return 512
 
         return 0
@@ -1190,19 +1190,14 @@ class CodingCanvas(tk.Canvas):
 
         # Error 315 This move produces Setting(s) not connected to the last immediate action of a parent flow
         if action_icon[icon_ID].action != SETTING:
-            predecessors = action_icon[icon_ID].icon_parents()
-            succesors = []
-            for p in predecessors:
-                s = action_icon[p].next_inflow()
-                if s:
-                    if action_icon[s].row <= to_row
-
-                    succesors.append(action_icon[s].row)
-                if succesors:
-                    succesors.sort()
-                    if to_row <= succesors[0]:
-                        return 315
-
+            predecessor = action_icon[icon_ID].icon_parents()
+            if predecessor:
+                children = action_icon[predecessor[0]].icon_children()
+                if children:
+                    rows = []
+                    for child in children:
+                        if action_icon[child].row > to_row:
+                            return 315
 
         return 0
 

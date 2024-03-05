@@ -187,8 +187,12 @@ class action :
             parents.append(link[p][0])
         return parents
 
-    # def icons_down(self):
-    #     succesors = [lnk for lnk in self.links if action_icon[link[lnk][1]] != self]
+    def icon_children(self):
+        children_links = [lnk for lnk in self.links if action_icon[link[lnk][1]] != self]
+        children = []
+        for child in children_links:
+            children.append(link[child][1])
+        return children
 
 
     # returns the number of the closest row upwards where this action is connected with another icon
