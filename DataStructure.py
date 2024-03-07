@@ -30,6 +30,7 @@ SETTING_COMPATIBLE = {SETTING, CHALLENGING, WANDERING, PROBING}
 
 error_message = {}
 error_message[1]   = "Error 1 Area not available for dropping Icons"
+error_message[2]   = "Error 2 Do not release shift before ending icon move"
 
 # Errors placing icons
 error_message[101] = "Error 101 Only one Setting per row is allowed"
@@ -193,7 +194,7 @@ class action :
         for child in children_links:
             children.append(link[child][1])
         return children
-#
+
 
     # returns the number of the closest row upwards where this action is connected with another icon
     # if not connection is available, it says that the row is -1

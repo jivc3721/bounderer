@@ -204,6 +204,7 @@ class CodingCanvas(tk.Canvas):
         self.icon_dx = 0
         self.icon_dy = 0
         self.click_on_icon = 0
+        self.icon_in_transit = False
 
         # variables for information window for icons
         self.info_window_on = False
@@ -658,6 +659,15 @@ class CodingCanvas(tk.Canvas):
 
 # click release to close info window
     def close_info_window(self, event):
+        if self.icon_in_transit :
+            icon_id = self.find_withtag(tk.CURRENT)[0]
+            rx1, ry1, rx2, ry2 = self.bbox(coding_sheet[action_icon[icon_id].row][ACTIONS_COLUMN])
+            delta_y = (ry2 - ry1 - 25) / 2  # for centring the icon on y axis
+            self.coords(tk.CURRENT, action_icon[icon_id].delta_x, ry1 + delta_y)
+            self.redraw_iconlinks(icon_id)
+            self.icon_in_transit = False
+            self.error_message(2)
+
         if self.info_window_on:
             self.delete("info_window")
             self.info_window_on = False
@@ -1097,6 +1107,9 @@ class CodingCanvas(tk.Canvas):
         self.delete(ref)
 
     def icon_to_move(self, event):
+        if self.info_window_on:
+            self.close_info_window(event)
+
         x = self.canvasx(event.x)
         y = self.canvasy(event.y)
         icon = self.find_withtag(tk.CURRENT)[0]
@@ -1115,6 +1128,8 @@ class CodingCanvas(tk.Canvas):
             self.icon_dy = y - coords[1]
 
     def move_icon(self, event):
+        if self.info_window_on:
+            self.close_info_window(event)
         x = self.canvasx(event.x)
         y = self.canvasy(event.y)
         coords = self.bbox(tk.CURRENT)
@@ -1122,6 +1137,7 @@ class CodingCanvas(tk.Canvas):
         if len(coords):
             self.coords(tk.CURRENT, x-self.icon_dx, y-self.icon_dy)
             self.redraw_iconlinks(icon)
+        self.icon_in_transit = True
 
     def error_move(self, icon_ID, to_row):
         if action_icon[icon_ID].row == to_row:
@@ -1198,7 +1214,7 @@ class CodingCanvas(tk.Canvas):
                     for child in children:
                         if action_icon[child].row > to_row:
                             return 315
-#
+
         return 0
 
     def icon_restplace(self, event):
@@ -1266,6 +1282,7 @@ class CodingCanvas(tk.Canvas):
             self.coords(tk.CURRENT, action_icon[icon_id].delta_x, ry1 + delta_y)
             self.error_message(error_move)
         self.redraw_iconlinks(icon_id)
+        self.icon_in_transit = False
 
         # re-establishing invisibility marks
         if self.invisible_links(icon_id, up_down=UP):
