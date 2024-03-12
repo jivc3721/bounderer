@@ -1,6 +1,6 @@
 
-SW_VER = "Version Beta 0.3"
-DATE_VER = "March 1/2024"
+SW_VER = "Version Beta 0.4"
+DATE_VER = "March 12/2024"
 
 # with import we use the name of the module or alias to invoke contents
 # with from... we can bypass the name of the module when invoking
