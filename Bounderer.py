@@ -760,9 +760,10 @@ class CodingCanvas(tk.Canvas):
                         else action_icon[icon].flow-1
 
             else:
+                ref_flow = action_icon[self.icon_to_edit].flow
                 for icon in action_icon:
                     action_icon[icon].flow = action_icon[icon].flow \
-                        if action_icon[icon].flow > action_icon[self.icon_to_edit].flow \
+                        if (action_icon[icon].flow > ref_flow)  \
                         else action_icon[icon].flow+1
             del action_icon[self.icon_to_edit]
             self.delete(self.icon_to_edit)
@@ -1681,21 +1682,27 @@ class CodingCanvas(tk.Canvas):
         self.highlight(coding_sheet[current_row][current_column])
 
     def delete_row(self, row):
-        # measure fields to delete and to move
+        # measure fields to delete and to move (d for delete) (m for move)
         dy1 = self.fit_box(coding_sheet[row][0])[1]
         dy2 = self.maxy_row_box(row)
         my1 = dy2 + GAP_FOR_LINE +1
         my2 = self.maxy_row_box(len(coding_sheet)-1) + GAP_FOR_LINE + 1
 
-        # mark areas to delete (we have to exclude some because overlapping goes too far) and to move
+        # mark areas to delete (we have to exclude some because overlapping goes too far)
+        # it goes to far because the fields of the row about the one that we are going to erase
+        # are overlapping on the fields to erase. This is becasue the text of the row to erase was transfered above
         self.addtag_overlapping("delete", 0, dy1, 1367, dy2 + GAP_FOR_LINE)
         self.addtag_overlapping("exclude", -1, self.fit_box(coding_sheet[row-1][0])[1],
                                 1367, self.fit_box(coding_sheet[row-1][0])[3])
+        # remove the tag "delete" from objects with tag "exclude"
         self.dtag("exclude", "delete")
+        # some links connecting icons can also get trap in the overlapping, so we need to exclude them
+        self.dtag("link", "delete")
 
+        # mark area to move
         self.addtag_overlapping("move", 0, my1, 1367, my2)
 
-        # delte from canvas
+        # delete from canvas
         self.delete("delete")
 
         # renumber rows and icons because we have things to move and renumber
@@ -1718,7 +1725,7 @@ class CodingCanvas(tk.Canvas):
         del coding_sheet[row]
         self.fix_graph(row-1)
 
-
+    # Communication is equal to transcript
     def transcript_bs(self):
         global current_row
         if not self.icons_in_row(current_row):
@@ -2265,7 +2272,7 @@ def open_file():
                         note = note + line
             elif file_section == 2:
                 str_data = line.split()
-                data = [int(float(d)) for d in str_data]
+                data = [int(float(d)) for d in str_data[0:6]]
 
                 icon1 = c.identify_icon(data[0], data[1], data[2])
                 icon2 = c.identify_icon(data[3], data[4], data[5])
@@ -2315,6 +2322,7 @@ def save_coding():
                     str(action_icon[icon2].row) + " " +
                     str(action_icon[icon2].action) + " " +
                     str(action_icon[icon2].delta_x) + " " +
+                    c.itemcget(lnk, "state") +
                     "\n")
         f.close()
         root.title("Bounderer" + SW_VER + " ::: " + codingfile)
