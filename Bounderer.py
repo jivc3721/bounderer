@@ -1213,7 +1213,7 @@ class CodingCanvas(tk.Canvas):
                 if children:
                     rows = []
                     for child in children:
-                        if action_icon[child].row > to_row:
+                        if action_icon[child].row > to_row and action_icon[child].action == SETTING:
                             return 315
 
         return 0
