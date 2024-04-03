@@ -1175,7 +1175,7 @@ class CodingCanvas(tk.Canvas):
                     succesors.append(action_icon[s].row)
                 if succesors:
                     succesors.sort()
-                    if to_row >= succesors[0]:
+                    if to_row > succesors[0]:
                         return 305
 
         # error 306 Moving the icon disrupts previously established sequence. Delete links before moving
