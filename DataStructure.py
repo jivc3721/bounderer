@@ -299,7 +299,7 @@ class action :
         previous = self.previous_inflow()
         while previous:
             safe = previous
-            previous = self.previous_inflow()
+            previous = action_icon[previous].previous_inflow()
         return safe
 
     def enclosing_settings(self):
