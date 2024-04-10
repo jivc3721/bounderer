@@ -522,9 +522,9 @@ class CodingCanvas(tk.Canvas):
         return x1+int((x2-x1)/2), y1+int((y2-y1)/2)
 
     # I think that for actualize_flow I was assuming that this function here was copying information about the
-    # flow from the icon1 to the icon2....SETTING in icon2 is special becasue in that case info of the flow
+    # flow from the icon1 to the icon2....SETTING in icon2 is special because in that case info of the flow
     # do not down.
-    def create_link(self, icon1, icon2):
+    def create_link(self, icon1, icon2, lnk_state=tk.NORMAL):
         global link, action_icon
         lx1, ly1 = self.icon_center(icon1)
         lx2, ly2 = self.icon_center(icon2)
@@ -536,9 +536,14 @@ class CodingCanvas(tk.Canvas):
 
         lnk = self.create_line(lx1, ly1, sx, sy, lx2, ly2, smooth=True, width=3,
                                fill=self.action_tkcolor(lnkcolor), activewidth=5,
-                               activefill=ACTIVE_LINKCOLOR, dash=lkdash, tag="link", state=tk.NORMAL)
+                               activefill=ACTIVE_LINKCOLOR, dash=lkdash, tag="link", state=lnk_state)
         self.tag_raise(icon1, lnk)
         self.tag_raise(icon2, lnk)
+
+        if lnk_state == tk.HIDDEN:
+            self.put_mark_invisibility(icon1, state=ON, up_down=UP)
+            self.put_mark_invisibility(icon2, state=ON, up_down=DOWN)
+
         link[lnk] = (icon1, icon2)
 
         action_icon[icon1].links = action_icon[icon1].links + (lnk,)
