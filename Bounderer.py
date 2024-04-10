@@ -666,6 +666,13 @@ class CodingCanvas(tk.Canvas):
             self.coords(tk.CURRENT, action_icon[icon_id].delta_x, ry1 + delta_y)
             self.redraw_iconlinks(icon_id)
             self.icon_in_transit = False
+
+            # re-establishing invisibility marks
+            if self.invisible_links(icon_id, up_down=UP):
+                self.put_mark_invisibility(icon_id, state=ON, up_down=UP)
+            if self.invisible_links(icon_id, up_down=DOWN):
+                self.put_mark_invisibility(icon_id, state=ON, up_down=DOWN)
+
             self.error_message(2)
 
         if self.info_window_on:
