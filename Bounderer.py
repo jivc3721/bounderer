@@ -1,6 +1,6 @@
 
-SW_VER = "Version Beta 0.4"
-DATE_VER = "March 12/2024"
+SW_VER = "Version Beta 0.5"
+DATE_VER = "April 12/2024"
 
 # with import we use the name of the module or alias to invoke contents
 # with from... we can bypass the name of the module when invoking
@@ -541,8 +541,8 @@ class CodingCanvas(tk.Canvas):
         self.tag_raise(icon2, lnk)
 
         if lnk_state == tk.HIDDEN:
-            self.put_mark_invisibility(icon1, state=ON, up_down=UP)
-            self.put_mark_invisibility(icon2, state=ON, up_down=DOWN)
+            self.put_mark_invisibility(icon1, state=ON, up_down=DOWN)
+            self.put_mark_invisibility(icon2, state=ON, up_down=UP)
 
         link[lnk] = (icon1, icon2)
 
@@ -793,9 +793,9 @@ class CodingCanvas(tk.Canvas):
         if state == ON:
             if up_down == UP:
                 if not mark_up:
-                    self.create_oval(x2 - 10, y1, x2, y1 + 10, fill=INVISIBLE_MARKCOLOR, tag="invisible_up")
+                    mark = self.create_oval(x2 - 10, y1, x2, y1 + 10, fill=INVISIBLE_MARKCOLOR, tag="invisible_up")
             elif not mark_dwn:
-                self.create_oval(x1, y2 - 10, x1 + 10, y2, fill=INVISIBLE_MARKCOLOR, tag="invisible_down")
+                mark = self.create_oval(x1, y2 - 10, x1 + 10, y2, fill=INVISIBLE_MARKCOLOR, tag="invisible_down")
         else:
             if up_down == UP and mark_up:
                 self.delete(mark_up[0])
@@ -2242,6 +2242,7 @@ def open_file():
         f = open(filename, mode="r")
         text = ""
         current_row, current_column = 0, 0
+        icon1, icon2 = 0, 0 # basically if they keep the value in 0 no icons on the file
         process_values = True
         file_section = 0
         for line in f:
@@ -2283,14 +2284,23 @@ def open_file():
                         note = note + line
             elif file_section == 2:
                 str_data = line.split()
+                lk_state = tk.NORMAL if len(str_data) == 6 else str_data[6]
                 data = [int(float(d)) for d in str_data[0:6]]
 
                 icon1 = c.identify_icon(data[0], data[1], data[2])
                 icon2 = c.identify_icon(data[3], data[4], data[5])
+
                 print("icons to link:", icon1, icon2)
-                c.create_link(icon1, icon2)
+                c.create_link(icon1, icon2, lk_state)
             codingfile = filename
         f.close()
+
+        # invisible marks left hidden after multiple links requiere to put icons at the front, so we need to reveal
+        # the marks of invisibility again
+        if icon2 != 0:
+            c.tag_raise("invisible_up", icon2)
+            c.tag_raise("invisible_down", icon2)
+
         root.title("Bounderer " + SW_VER + " ::: " + filename)
         current_row = 0
         current_column = TIME_COLUMN
