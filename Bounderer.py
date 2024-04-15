@@ -622,8 +622,8 @@ class CodingCanvas(tk.Canvas):
         flow_name = action_icon[icon_parent].note[:15] if action_icon[icon_parent].note else "N/A"
         label = "Flow " + str(action_icon[icon1].flow) + "  #" + flow_name + "\n" + \
                 "Row  " + str(action_icon[icon1].row) + " ――⟩ Row  " + str(action_icon[icon2].row) + "\n" + \
-                ICON_NAME[action_icon[icon1].action] + "  ――⟩  " + ICON_NAME[action_icon[icon2].action] + "\n" + \
-                "LnkID: " + str(lnk)
+                ICON_NAME[action_icon[icon1].action] + "  ――⟩  " + ICON_NAME[action_icon[icon2].action]
+                # "LnkID: " + str(lnk)
 
         text = self.create_text(x, y, justify=tk.LEFT, width=250, text=label, tags="info_window", anchor=tk.E)
         x1, y1, x2, y2 = self.bbox(text)
@@ -643,8 +643,8 @@ class CodingCanvas(tk.Canvas):
         # location = self.bbox(icon)
         icon_note = action_icon[icon].note if action_icon[icon].note else "N/A"
         label = ICON_NAME[action_icon[icon].action] + " ∈ Flow " + str(action_icon[icon].flow) + "\n" + \
-                "##" + icon_note + "\n" + \
-                "iconID: " + str(icon)
+                "##" + icon_note
+                # "iconID: " + str(icon)
                 # "»» Belongs to flow " + str(action_icon[icon].flow) + "\n" + \
                 # "row   : " + str(action_icon[icon].row) + \
                 # "IconID: " + str(icon)
@@ -2034,10 +2034,13 @@ class TreeCanvas(tk.Canvas):
         y = self.canvasy(event.y)
         if self.type(tk.CURRENT) == "text":
             leaf = int(self.itemcget(tk.CURRENT, "text"))
-            label = "------------------------------" + "\n" + \
-                    "flow  : " + str(self.leafs[leaf].flow) + "\n" + \
-                    "note  : " + (self.leafs[leaf].note) + "\n" + \
-                    "row   : " + str(self.leafs[leaf].row)
+            icons_in_flow = [icon for icon in action_icon if action_icon[icon].flow == leaf]
+            lenght = len(icons_in_flow)
+            time = c.itemcget(coding_sheet[self.leafs[leaf].row][TIME_COLUMN], "text")
+            time = time if time else "N/A"
+            label = "Flow " + str(self.leafs[leaf].flow) + " || Lenght " + str(lenght) + "\n" + \
+                    "#" + (self.leafs[leaf].note) + "\n" + \
+                    "Row " + str(self.leafs[leaf].row) + " || time: " + time
             info = self.create_text(x, y, justify=tk.LEFT, width=250, text=label, tags="info_window", anchor=tk.E)
             x1, y1, x2, y2 = self.bbox(info)
             rect = self.info_window_ID = self.create_rectangle(x1 - 3, y1 - 3, x2 + 3, y2 + 3,
