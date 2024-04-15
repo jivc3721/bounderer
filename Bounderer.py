@@ -619,13 +619,13 @@ class CodingCanvas(tk.Canvas):
         icon2 = link[lnk][1]
         icon_parent = action_icon[icon1].first_inflow(icon1)
         # icon_parent = icon1
-        flow_name = action_icon[icon_parent].note[:15] if action_icon[icon_parent].note else "--------------"
-        label = "Flow " + str(action_icon[icon1].flow) + "  ::  " + flow_name + "\n" + \
-                "From row  " + str(action_icon[icon1].row) + "  to  " + str(action_icon[icon2].row) + "\n" + \
-                ICON_NAME[action_icon[icon1].action] + " to " + ICON_NAME[action_icon[icon2].action] + "\n" + \
+        flow_name = action_icon[icon_parent].note[:15] if action_icon[icon_parent].note else "N/A"
+        label = "Flow " + str(action_icon[icon1].flow) + "  #" + flow_name + "\n" + \
+                "Row  " + str(action_icon[icon1].row) + " ――⟩ Row  " + str(action_icon[icon2].row) + "\n" + \
+                ICON_NAME[action_icon[icon1].action] + "  ――⟩  " + ICON_NAME[action_icon[icon2].action] + "\n" + \
                 "LnkID: " + str(lnk)
 
-        text = self.create_text(x, y, justify=tk.LEFT, width=250, text=label, tags="info_window", anchor=tk.N)
+        text = self.create_text(x, y, justify=tk.LEFT, width=250, text=label, tags="info_window", anchor=tk.E)
         x1, y1, x2, y2 = self.bbox(text)
         rect = self.create_rectangle(x1-3, y1-3, x2+3, y2+3, fill="Cyan", tags="info_window", width=2)
         self.tag_lower(rect, text)
@@ -641,11 +641,11 @@ class CodingCanvas(tk.Canvas):
         y = self.canvasy(event.y)
         icon = self.find_withtag(tk.CURRENT)[0]
         # location = self.bbox(icon)
-        icon_note = action_icon[icon].note if action_icon[icon].note else "No comment"
-        label = ICON_NAME[action_icon[icon].action] + "\n" + \
-                "»» " + icon_note + "\n" + \
-                "»» Belongs to flow " + str(action_icon[icon].flow) + "\n" + \
+        icon_note = action_icon[icon].note if action_icon[icon].note else "N/A"
+        label = ICON_NAME[action_icon[icon].action] + " ∈ Flow " + str(action_icon[icon].flow) + "\n" + \
+                "##" + icon_note + "\n" + \
                 "iconID: " + str(icon)
+                # "»» Belongs to flow " + str(action_icon[icon].flow) + "\n" + \
                 # "row   : " + str(action_icon[icon].row) + \
                 # "IconID: " + str(icon)
         # "Orphan: " + str(action_icon[icon].orphan) + "\n" +   \
@@ -653,7 +653,7 @@ class CodingCanvas(tk.Canvas):
         #         "location: " + str(location[0]) + "," + str(location[1]) + "," + \
         #         str(location[2]) + "," + str(location[3]) + "\n" + \
 
-        text = self.create_text(x, y, justify=tk.LEFT, width=250, text=label, tags="info_window", anchor=tk.N)
+        text = self.create_text(x, y, justify=tk.LEFT, width=250, text=label, tags="info_window", anchor=tk.E)
         x1, y1, x2, y2 = self.bbox(text)
         rect = self.info_window_ID = self.create_rectangle(x1-3, y1-3, x2+3, y2+3, fill="yellow", tags="info_window", width=2)
         self.tag_lower(rect, text)
@@ -2038,7 +2038,7 @@ class TreeCanvas(tk.Canvas):
                     "flow  : " + str(self.leafs[leaf].flow) + "\n" + \
                     "note  : " + (self.leafs[leaf].note) + "\n" + \
                     "row   : " + str(self.leafs[leaf].row)
-            info = self.create_text(x, y, justify=tk.LEFT, width=250, text=label, tags="info_window", anchor=tk.NW)
+            info = self.create_text(x, y, justify=tk.LEFT, width=250, text=label, tags="info_window", anchor=tk.E)
             x1, y1, x2, y2 = self.bbox(info)
             rect = self.info_window_ID = self.create_rectangle(x1 - 3, y1 - 3, x2 + 3, y2 + 3,
                                                                fill="yellow", tags="info_window",  width=2)
