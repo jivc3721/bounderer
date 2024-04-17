@@ -173,6 +173,11 @@ class CodingCanvas(tk.Canvas):
 
         # Contextual menu for links
         self.linkmenu = tk.Menu(self, tearoff=0)
+        self.linkmenu.add_command(label="Start of flow", command=self.go_start_flow)
+        self.linkmenu.add_command(label="⃝  <―――", command=self.go_previous_icon)
+        self.linkmenu.add_command(label="―――> ⃝ ", command=self.go_next_icon)
+        self.linkmenu.add_command(label="End of flow", command=self.go_end_flow)
+        self.linkmenu.add_separator()
         self.linkmenu.add_command(label="- Erase link -", command=self.delete_link)
 
         # Contextual menu for editing boundary actions
@@ -325,6 +330,18 @@ class CodingCanvas(tk.Canvas):
             self.yview_scroll(-1, "units")
         elif delta < 0:
             self.yview_scroll(1, "units")
+
+    def go_start_flow(self):
+        pass
+
+    def go_previous_icon(self):
+        pass
+
+    def go_next_icon(self):
+        pass
+
+    def go_end_flow(self):
+        pass
 
     def jump_torow(self, row):
         global current_row, current_column
@@ -1500,9 +1517,9 @@ class CodingCanvas(tk.Canvas):
         self.icon_note = tk.StringVar(value=action_icon[self.icon_to_edit].note)
         self.flow_color = tk.IntVar(value=action_icon[self.icon_to_edit].flow_color)
 
-        l1 = ttk.Label(edit_window, text="Icon label : ")
+        l1 = ttk.Label(edit_window, text="## ")
         e1 = ttk.Entry(edit_window, textvariable=self.icon_note, width=45)
-        l2 = ttk.Label(edit_window, text="Flow color->")
+        l2 = ttk.Label(edit_window, text="<―― flow color ――>")
 
         rb0 = ttk.Radiobutton(edit_window, variable=self.flow_color, value=0, image=self.FLOW_COLORS[0])
         rb1 = ttk.Radiobutton(edit_window, variable=self.flow_color, value=1, image=self.FLOW_COLORS[1])
@@ -1518,9 +1535,9 @@ class CodingCanvas(tk.Canvas):
         b1 = ttk.Button(edit_window, text="Ok", command=self.edit_window_ok)
         b2 = ttk.Button(edit_window, text="Cancel", command=self.edit_window_cancel)
 
-        l1.grid(row=0, column=0)
+        l1.grid(row=0, column=0, sticky=tk.E)
         e1.grid(row=0, column=1, columnspan=3)
-        l2.grid(row=1)
+        l2.grid(row=1, column=0, columnspan=4)
 
         if self.flow_color.get() != ORPHAN_LINKCOLOR:
             rb0.grid(row=2, column=0)  # red
