@@ -332,16 +332,28 @@ class CodingCanvas(tk.Canvas):
             self.yview_scroll(1, "units")
 
     def go_start_flow(self):
-        pass
+        start_icon = link[self.link_to_edit][0]
+        previous = action_icon[start_icon].previous_list()
+        if previous :
+            self.jump_torow(action_icon[previous[0]].row)
+        else:
+            self.jump_torow(action_icon[start_icon].row)
 
     def go_previous_icon(self):
-        pass
+        icon_to_jump = link[self.link_to_edit][0]
+        self.jump_torow(action_icon[icon_to_jump].row)
 
     def go_next_icon(self):
-        pass
+        icon_to_jump = link[self.link_to_edit][1]
+        self.jump_torow(action_icon[icon_to_jump].row)
 
     def go_end_flow(self):
-        pass
+        start_icon = link[self.link_to_edit][0]
+        upcoming = action_icon[start_icon].upcoming_list()
+        if upcoming :
+            self.jump_torow(action_icon[upcoming[-1]].row)
+        else:
+            self.jump_torow(action_icon[start_icon].row)
 
     def jump_torow(self, row):
         global current_row, current_column
@@ -1519,7 +1531,7 @@ class CodingCanvas(tk.Canvas):
 
         l1 = ttk.Label(edit_window, text="## ")
         e1 = ttk.Entry(edit_window, textvariable=self.icon_note, width=45)
-        l2 = ttk.Label(edit_window, text="<―― flow color ――>")
+        l2 = ttk.Label(edit_window, text="⟨――― flow color ―――⟩")
 
         rb0 = ttk.Radiobutton(edit_window, variable=self.flow_color, value=0, image=self.FLOW_COLORS[0])
         rb1 = ttk.Radiobutton(edit_window, variable=self.flow_color, value=1, image=self.FLOW_COLORS[1])
