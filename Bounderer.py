@@ -1617,6 +1617,9 @@ class CodingCanvas(tk.Canvas):
                     self.comment_bs()
                     item = self.has_focus()
             self.highlight(item)
+        elif event.keysym == "Delete" :
+                self.dchars(item, insert, insert)
+                self.highlight(item)
 
         # navigation
         elif event.keysym == "Home":
