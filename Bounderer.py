@@ -377,7 +377,6 @@ class CodingCanvas(tk.Canvas):
         # the fisrt icon is above the SETTING. In this case the connection is always to the
         # SETTING referred by the leaf
         if action_icon[self.first_icon].row <= destiny_row:
-            self.jump_torow(destiny_row)
             self.connecting_icons(self.first_icon, second_icon)
         else:
         # second case the first icon is below the SETTING, so the idea is to connect to the icon in the same flow of
@@ -388,7 +387,6 @@ class CodingCanvas(tk.Canvas):
             for i in iconlist:
                 if action_icon[winner].row < action_icon[i].row:
                     winner = i
-            self.jump_torow(action_icon[winner].row)
             self.connecting_icons(self.first_icon, winner)
 
     def move_to_visibility(self, item):
@@ -1611,7 +1609,7 @@ class CodingCanvas(tk.Canvas):
                 self.select_clear()
             else:
                 if insert > 0:
-                    self.dchars(item, insert-1, insert)
+                    self.dchars(item, insert-1, insert-1)
                 elif current_column == COMMUNICATION_COLUMN and current_row > 0 :
                     self.transcript_bs()
                     item = self.has_focus()
@@ -1786,8 +1784,8 @@ class CodingCanvas(tk.Canvas):
             # move field up
             self.focus_set()
             self.focus(coding_sheet[current_row][COMMUNICATION_COLUMN])  # set focus to text item
-            self.index(coding_sheet[current_row][COMMUNICATION_COLUMN], tk.END)
-            self.icursor(coding_sheet[current_row][COMMUNICATION_COLUMN], tk.END)
+            self.index(coding_sheet[current_row][COMMUNICATION_COLUMN], len(comm_up_text))
+            self.icursor(coding_sheet[current_row][COMMUNICATION_COLUMN], len(comm_up_text))
             self.highlight(coding_sheet[current_row][COMMUNICATION_COLUMN])
 
             self.delete_row(current_row+1)
@@ -1960,7 +1958,15 @@ class CodingCanvas(tk.Canvas):
                 if action_icon[c].action == action and action_icon[c].delta_x == delta_x:
                     return c
         return 0
-                
+
+    def identify_actor(self, row):
+        pivot_row = row
+        actor = self.itemcget(coding_sheet[pivot_row][ACTOR_COLUMN], "text")
+        while not actor and pivot_row > 0:
+            pivot_row -=1
+            actor = self.itemcget(coding_sheet[pivot_row][ACTOR_COLUMN], "text")
+        return actor
+
 ##_________________________________________________________________________            
 ######### End of class CanvasText #########################
 ##_________________________________________________________________________            
@@ -2067,9 +2073,13 @@ class TreeCanvas(tk.Canvas):
             lenght = len(icons_in_flow)
             time = c.itemcget(coding_sheet[self.leafs[leaf].row][TIME_COLUMN], "text")
             time = time if time else "N/A"
+            actor = c.identify_actor(self.leafs[leaf].row)
+            actor = actor if actor else "N/A"
             label = "Flow " + str(self.leafs[leaf].flow) + " || Lenght " + str(lenght) + "\n" + \
                     "#" + (self.leafs[leaf].note) + "\n" + \
-                    "Row " + str(self.leafs[leaf].row) + " || time: " + time
+                    "Row " + str(self.leafs[leaf].row) + " || time: " + time + "\n" + \
+                    "Actor: " + actor
+
             info = self.create_text(x, y, justify=tk.LEFT, width=250, text=label, tags="info_window", anchor=tk.E)
             x1, y1, x2, y2 = self.bbox(info)
             rect = self.info_window_ID = self.create_rectangle(x1 - 3, y1 - 3, x2 + 3, y2 + 3,
