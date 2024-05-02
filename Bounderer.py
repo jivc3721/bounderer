@@ -652,7 +652,7 @@ class CodingCanvas(tk.Canvas):
                 ICON_NAME[action_icon[icon1].action] + "  ――⟩  " + ICON_NAME[action_icon[icon2].action]
                 # "LnkID: " + str(lnk)
 
-        text = self.create_text(x, y, justify=tk.LEFT, width=250, text=label, tags="info_window", anchor=tk.E)
+        text = self.create_text(x, y, justify=tk.LEFT, width=250, text=label, tags="info_window", anchor=tk.SE)
         x1, y1, x2, y2 = self.bbox(text)
         rect = self.create_rectangle(x1-3, y1-3, x2+3, y2+3, fill="Cyan", tags="info_window", width=2)
         self.tag_lower(rect, text)
@@ -680,7 +680,7 @@ class CodingCanvas(tk.Canvas):
         #         "location: " + str(location[0]) + "," + str(location[1]) + "," + \
         #         str(location[2]) + "," + str(location[3]) + "\n" + \
 
-        text = self.create_text(x, y, justify=tk.LEFT, width=250, text=label, tags="info_window", anchor=tk.E)
+        text = self.create_text(x, y, justify=tk.LEFT, width=250, text=label, tags="info_window", anchor=tk.SE)
         x1, y1, x2, y2 = self.bbox(text)
         rect = self.info_window_ID = self.create_rectangle(x1-3, y1-3, x2+3, y2+3, fill="yellow", tags="info_window", width=2)
         self.tag_lower(rect, text)
