@@ -938,7 +938,7 @@ class CodingCanvas(tk.Canvas):
                     for lnk in action_icon[previous[0]].links:
                         if action_icon[link[lnk][1]].action != SETTING:
                             c+=1
-                    if c >=1:
+                    if c >1:
                         return 512
 
         return 0
