@@ -5,7 +5,7 @@ a = Analysis(
     ['bounderer.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('.\\\\*.ppm', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

@@ -12,9 +12,18 @@ from tkinter import filedialog
 from tkinter import messagebox
 
 import os
+import sys
 
 from docx import Document
 import xlsxwriter
+
+def get_resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 #for printing
 # import tempfile
@@ -98,44 +107,44 @@ class CodingCanvas(tk.Canvas):
 
         # ICONS FOR CODING
         self.ICONS = []
-        self.ICONS.append(tk.PhotoImage(file="setting.ppm"))
-        self.ICONS.append(tk.PhotoImage(file="following.ppm"))
-        self.ICONS.append(tk.PhotoImage(file="wandering.ppm"))
-        self.ICONS.append(tk.PhotoImage(file="probing.ppm"))
-        self.ICONS.append(tk.PhotoImage(file="challenging.ppm"))
-        self.ICONS.append(tk.PhotoImage(file="enhancing.ppm"))
+        self.ICONS.append(tk.PhotoImage(file=get_resource_path("setting.ppm")))
+        self.ICONS.append(tk.PhotoImage(file=get_resource_path("following.ppm")))
+        self.ICONS.append(tk.PhotoImage(file=get_resource_path("wandering.ppm")))
+        self.ICONS.append(tk.PhotoImage(file=get_resource_path("probing.ppm")))
+        self.ICONS.append(tk.PhotoImage(file=get_resource_path("challenging.ppm")))
+        self.ICONS.append(tk.PhotoImage(file=get_resource_path("enhancing.ppm")))
         # ICONS FOR LINKING
-        self.ICONS.append(tk.PhotoImage(file="settingNEG.ppm"))
-        self.ICONS.append(tk.PhotoImage(file="followingNEG.ppm"))
-        self.ICONS.append(tk.PhotoImage(file="wanderingNEG.ppm"))
-        self.ICONS.append(tk.PhotoImage(file="probingNEG.ppm"))
-        self.ICONS.append(tk.PhotoImage(file="challengingNEG.ppm"))
-        self.ICONS.append(tk.PhotoImage(file="enhancingNEG.ppm"))
+        self.ICONS.append(tk.PhotoImage(file=get_resource_path("settingNEG.ppm")))
+        self.ICONS.append(tk.PhotoImage(file=get_resource_path("followingNEG.ppm")))
+        self.ICONS.append(tk.PhotoImage(file=get_resource_path("wanderingNEG.ppm")))
+        self.ICONS.append(tk.PhotoImage(file=get_resource_path("probingNEG.ppm")))
+        self.ICONS.append(tk.PhotoImage(file=get_resource_path("challengingNEG.ppm")))
+        self.ICONS.append(tk.PhotoImage(file=get_resource_path("enhancingNEG.ppm")))
         # ICONS FOR CONTEXTUAL MENU
-        self.ICONS.append(tk.PhotoImage(file="settingSmall.ppm"))
-        self.ICONS.append(tk.PhotoImage(file="followingSmall.ppm"))
-        self.ICONS.append(tk.PhotoImage(file="wanderingSmall.ppm"))
-        self.ICONS.append(tk.PhotoImage(file="probingSmall.ppm"))
-        self.ICONS.append(tk.PhotoImage(file="challengingSmall.ppm"))
-        self.ICONS.append(tk.PhotoImage(file="enhancingSmall.ppm"))
+        self.ICONS.append(tk.PhotoImage(file=get_resource_path("settingSmall.ppm")))
+        self.ICONS.append(tk.PhotoImage(file=get_resource_path("followingSmall.ppm")))
+        self.ICONS.append(tk.PhotoImage(file=get_resource_path("wanderingSmall.ppm")))
+        self.ICONS.append(tk.PhotoImage(file=get_resource_path("probingSmall.ppm")))
+        self.ICONS.append(tk.PhotoImage(file=get_resource_path("challengingSmall.ppm")))
+        self.ICONS.append(tk.PhotoImage(file=get_resource_path("enhancingSmall.ppm")))
         # ICONS FOR CODING - WARNINGS
-        self.ICONS.append(tk.PhotoImage(file="settingSmallNEG.ppm"))
-        self.ICONS.append(tk.PhotoImage(file="followingSmallNEG.ppm"))
-        self.ICONS.append(tk.PhotoImage(file="wanderingSmallNEG.ppm"))
-        self.ICONS.append(tk.PhotoImage(file="probingSmallNEG.ppm"))
-        self.ICONS.append(tk.PhotoImage(file="challengingSmallNEG.ppm"))
-        self.ICONS.append(tk.PhotoImage(file="enhancingSmallNEG.ppm"))
+        self.ICONS.append(tk.PhotoImage(file=get_resource_path("settingSmallNEG.ppm")))
+        self.ICONS.append(tk.PhotoImage(file=get_resource_path("followingSmallNEG.ppm")))
+        self.ICONS.append(tk.PhotoImage(file=get_resource_path("wanderingSmallNEG.ppm")))
+        self.ICONS.append(tk.PhotoImage(file=get_resource_path("probingSmallNEG.ppm")))
+        self.ICONS.append(tk.PhotoImage(file=get_resource_path("challengingSmallNEG.ppm")))
+        self.ICONS.append(tk.PhotoImage(file=get_resource_path("enhancingSmallNEG.ppm")))
 
         # ICONS FOR SELECTING THE COLOR OF A FLOW
         self.FLOW_COLORS = []
-        self.FLOW_COLORS.append(tk.PhotoImage(file="Red.ppm"))  # aa0000
-        self.FLOW_COLORS.append(tk.PhotoImage(file="Orange.ppm"))  # fa7818
-        self.FLOW_COLORS.append(tk.PhotoImage(file="Blue.ppm"))  # 0000b3
-        self.FLOW_COLORS.append(tk.PhotoImage(file="Cyan.ppm"))  # 12a0fe
-        self.FLOW_COLORS.append(tk.PhotoImage(file="LemonGreen.ppm"))  # 7df600
-        self.FLOW_COLORS.append(tk.PhotoImage(file="GrassGreen.ppm"))  # 129200
-        self.FLOW_COLORS.append(tk.PhotoImage(file="Black.ppm"))  # 000000
-        self.FLOW_COLORS.append(tk.PhotoImage(file="Gray.ppm"))  # 774a4a
+        self.FLOW_COLORS.append(tk.PhotoImage(file=get_resource_path("Red.ppm")))  # aa0000
+        self.FLOW_COLORS.append(tk.PhotoImage(file=get_resource_path("Orange.ppm")))  # fa7818
+        self.FLOW_COLORS.append(tk.PhotoImage(file=get_resource_path("Blue.ppm"))) # 0000b3
+        self.FLOW_COLORS.append(tk.PhotoImage(file=get_resource_path("Cyan.ppm")))  # 12a0fe
+        self.FLOW_COLORS.append(tk.PhotoImage(file=get_resource_path("LemonGreen.ppm")))  # 7df600
+        self.FLOW_COLORS.append(tk.PhotoImage(file=get_resource_path("GrassGreen.ppm")))  # 129200
+        self.FLOW_COLORS.append(tk.PhotoImage(file=get_resource_path("Black.ppm")))  # 000000
+        self.FLOW_COLORS.append(tk.PhotoImage(file=get_resource_path("Gray.ppm")))  # 774a4a
 
 
 
@@ -2698,4 +2707,6 @@ root.protocol("WM_DELETE_WINDOW", on_closing)
 root.bind("<Escape>", change_view)
 # root.bind("<Alt-z>", change_view)
 
+
 root.mainloop()
+
